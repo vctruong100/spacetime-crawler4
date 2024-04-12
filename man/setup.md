@@ -1,0 +1,22 @@
+## Project Setup
+This is a quick start in setting up the git repo on your local machine if you're unfamiliar with git.
+
+### Cloning
+Clone the git repo into your directory.
+```bash
+$ git clone git@github.com:YaysonsFuzzyBeetles/spacetime-crawler4py.git```
+
+### Syncing
+Your repo might be out-of-date. You may sync changes from the remote repo:
+```bash
+$ git fetch origin```
+
+### Pushing Changes
+If you wish to update the remote repo:
+```bash
+git push origin```
+
+### What now?
+Check out `man/guidelines.md` for what rules you should follow:
+- Commits
+- Branching
