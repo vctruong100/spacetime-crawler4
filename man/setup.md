@@ -27,7 +27,8 @@ git status	# git changes not yet committed
 ```
 
 ### What now?
-Git man pages: https://git-scm.com/doc
 Check out `man/guidelines.md` for what rules you should follow:
 - Commits
 - Branching
+
+Git man pages: https://git-scm.com/doc
