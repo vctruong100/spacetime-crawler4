@@ -18,15 +18,18 @@ branches.
 
 To sync your repo:
 ```bash
-git fetch origin```
+git fetch origin
+```
 
 To create and switch to a branch:
 ```bash
-git checkout -b my-branch```
+git checkout -b my-branch
+```
 
 To switch to a branch:
 ```bash
-git checkout my-branch```
+git checkout my-branch
+```
 
 When you are done implementing a feature, merge with the `master` branch and update the repo:
 ```bash
@@ -35,4 +38,5 @@ git fetch origin master
 git checkout master
 git merge my-branch
 git branch -d my-branch         # delete branch
-git push origin			# update remote repo```
+git push origin			# update remote repo
+```
