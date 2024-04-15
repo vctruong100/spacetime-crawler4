@@ -16,14 +16,14 @@ $ git fetch origin
 ### Pushing Changes
 If you wish to update the remote repo:
 ```bash
-git push origin
+$ git push origin
 ```
 
 ### Checking Status
 Please check often especially if you're unsure about the git repo status:
 ```bash
-git log		# git commit history
-git status	# git changes not yet committed
+$ git log	# git commit history
+$ git status	# git changes not yet committed
 ```
 
 ### What now?
