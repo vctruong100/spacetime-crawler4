@@ -1,4 +1,4 @@
-:: scripts/zip.sh
+:: scripts/zip.bat
 ::
 :: zips the current git repository
 :: excludes patterns defined in .gitignore
