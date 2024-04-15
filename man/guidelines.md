@@ -39,6 +39,7 @@ When you are done implementing a feature, merge with the `master` branch and upd
 ```bash
 $ git checkout my-branch        # branch to merge
 $ git fetch origin master
+$ git merge origin/master
 $ git checkout master
 $ git merge my-branch
 $ git branch -d my-branch       # delete branch
