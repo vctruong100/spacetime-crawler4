@@ -28,7 +28,7 @@ $ git status	# git changes not yet committed
 ```
 
 ### What now?
-Check out `man/guidelines.md` for what rules you should follow:
+Check out [man/guidelines.md](./guidelines.md) for what rules you should follow:
 - Commits
 - Branching
 
