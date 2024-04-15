@@ -11,6 +11,7 @@ $ git clone git@github.com:YaysonsFuzzyBeetles/spacetime-crawler4py.git
 Your repo might be out-of-date. You may sync changes from the remote repo:
 ```bash
 $ git fetch origin
+$ git merge origin/master
 ```
 
 ### Pushing Changes
