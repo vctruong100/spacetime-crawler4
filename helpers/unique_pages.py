@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 
 # Track unique pages by the URL and discard the fragment parts
 
-unqiue_pages = set()
+unique_pages = set()
 
 def add_page(url):
     """
@@ -15,8 +15,8 @@ def add_page(url):
 
     # remove fragments
     new_url = parsed._replace(fragment='').geturl()
-    if new_url not in unqiue_pages:
-        unqiue_pages.add(new_url)
+    if new_url not in unique_pages:
+        unique_pages.add(new_url)
         return True
     return False
 
