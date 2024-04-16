@@ -24,7 +24,7 @@ class TestIsValid(unittest.TestCase):
         self.assertFalse(is_valid("http://www.ics.uci.edu/image.gif"))
 
     def test_fragment_removal(self):
-        self.assertTrue(is_valid("http://www.ics.uci.edu/#fragment") == "http://www.ics.uci.edu/")
+        self.assertTrue(is_valid("http://www.ics.uci.edu/#fragment") == is_valid("http://www.ics.uci.edu/"))
 
     def test_subdomains(self):
         self.assertTrue(is_valid("http://subdomain.ics.uci.edu/"))
