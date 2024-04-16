@@ -26,7 +26,7 @@ cd zip.tmp
 if ! [ -z $(command -v zip) ]; then
 	zip -r a.zip .
 elif ! [ -z $(command -v powershell) ]; then
-   # windows
+	# windows
 	# use powershell Compress-Archive
 	powershell "Get-ChildItem -Path '.' -Force |"\
 "Compress-Archive -Force -DestinationPath 'a.zip'"

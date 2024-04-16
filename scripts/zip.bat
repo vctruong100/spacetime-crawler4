@@ -34,7 +34,7 @@ cd "%repo%"
 
 if not "%1"=="" (
 	move /Y ..\zip.bat.tmp\zip.tmp\a.zip "%1"
-   goto continue2
+	goto continue2
 )
 move /Y ..\zip.bat.tmp\zip.tmp\a.zip a.zip
 
