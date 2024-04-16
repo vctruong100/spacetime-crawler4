@@ -17,14 +17,27 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content 
     
+    # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
         links = set()
+        text_content = []
+
+        # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
-            # convert relative link to absolute link
             abs_link = urljoin(resp.url, link['href'])
             links.add(abs_link)
+
+        # Extract and clean text content
+        for p in soup.find_all(text=True):
+            text = p.strip()
+            if text:
+                text_content.append(text)
+
+        # Return both the list of links and the joined text content
         return list(links)
+
+    # Return empty list and empty string if the status is not 200 or content is missing
     return list()
 
 def is_valid(url):
@@ -44,6 +57,18 @@ def is_valid(url):
                 or netlocation.endswith(".informatics.uci.edu") or netlocation.endswith(".stat.uci.edu")):
             return False
         
+        # Extract path and check if path ends with file extensions and ignore it
+        path = parsed.path
+        if re.search(r".*\.(css|js|bmp|gif|jpe?g|ico"
+            + r"|png|tiff?|mid|mp2|mp3|mp4"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
+            return False
+        
         # Remove URL fragments
         url = parsed._replace(fragment="").geturl()
         return True
@@ -52,14 +77,5 @@ def is_valid(url):
         print ("TypeError for ", parsed)
         raise
         
-"""        return not re.match(
-            r".*\.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())"""
 
 
