@@ -24,6 +24,8 @@ class ParsedResponse:
 def parse_response(url, resp):
    """Parses the response if it does not exist in PAGE_CACHE and stores it.
    Otherwise, return the cached parsed data.
+
+   If response is a redirect, then the redirected URL is 'scraped' with no text content.
    """
 
    # Hash the normalized url (removes trailing '/')
@@ -33,6 +35,19 @@ def parse_response(url, resp):
       return PAGE_CACHE[hash]
 
    # Cached data does not exist, so try parsing resp
+
+   # Check if response is a redirect
+   if resp.is_redirect:
+      # Add redirected link to set of links
+      links = set()
+      links.add(resp.url)
+
+      # No text content because it's a redirect
+      text_content = []
+      PAGE_CACHE[hash] = ParsedResponse(links, text_content)
+      return PAGE_CACHE[hash]
+
+
    # Check if response is successful
    if resp.status == 200 and hasattr(resp.raw_response, 'content'):
       soup = BeautifulSoup(resp.raw_response.contet, 'html.parser')
