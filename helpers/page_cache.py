@@ -5,7 +5,7 @@
 
 from utils import get_urlhash, normalize
 from urllib.parse import urljoin, urlparse
-import bs4
+from bs4 import BeautifulSoup
 
 PAGE_CACHE = dict()
 
