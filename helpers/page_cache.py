@@ -20,12 +20,23 @@ class ParsedResponse:
         self.links = links
         self.text_content = text_content
 
+    def is_empty(self):
+        """Returns whether ParsedResponse was empty (did not parse any useful data)
+        """
+        return len(self.links) == 0 and len(self.text_content) == 0
+
 
 def parse_response(url, resp):
     """Parses the response if it does not exist in PAGE_CACHE and stores it.
     Otherwise, return the cached parsed data.
 
     If response is a redirect, then the redirected URL is 'scraped' with no text content.
+    Always returns a ParsedResponse object.
+
+    :param url str: The URL
+    :param resp Response: The response of the URL
+    :return: The parsed response object
+    :rtype: ParsedResponse
     """
 
     # Hash the normalized url (removes trailing '/')
