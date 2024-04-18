@@ -35,6 +35,12 @@ To switch to a branch:
 $ git checkout my-branch
 ```
 
+To bring in changes from `master` branch to your local branch:
+```bash
+$ git checkout my-branch
+$ git rebase master
+```
+
 When you are done implementing a feature, merge with the `master` branch and update the repo:
 ```bash
 $ git checkout master
