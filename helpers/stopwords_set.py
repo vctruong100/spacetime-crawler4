@@ -1,6 +1,6 @@
 # helpers/stopwords_set.py
 #
-# set for rsrc/stopwords_set.py
+# set for rsrc/stopwords.txt
 
 STOPWORDS_SET = set()
 
