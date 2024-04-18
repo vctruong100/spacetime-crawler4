@@ -35,7 +35,7 @@ def parse_response(url, resp):
    # Cached data does not exist, so try parsing resp
    # Check if response is successful
    if resp.status == 200 and hasattr(resp.raw_response, 'content'):
-      soup = BeautifulSoup(resp.raw_response.contet, 'html.parser')
+      soup = BeautifulSoup(resp.raw_response.contet, 'lxml')
       links = set()
       text_content = []
 
