@@ -6,5 +6,5 @@ STOPWORDS_SET = set()
 
 # load stopwords into STOPWORDS_SET
 with open("rsrc/stopwords.txt", "r") as infile:
-   for word in infile:
-      STOPWORDS_SET.add(word.strip())
+    for word in infile:
+        STOPWORDS_SET.add(word.strip())
