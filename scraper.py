@@ -1,7 +1,7 @@
 import re
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
-from page_cache import parse_response
+from helpers.page_cache import parse_response
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)

@@ -1,25 +1,14 @@
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse
 import configparser
+import time
+from ..scraper import extract_next_links, is_valid
 
-def read_config(config_file="config.ini"):
-    """
-    Reads the configuration file and returns the user agent and politeness delay.
-    
-    :param config_file str: The configuration file
-    :return: The user agent and politeness delay
-    :rtype: tuple
-    
-    """
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    user_agent = config['Agent']['USERAGENT']
-    politeness = float(config['Politeness']['POLITENESS'])
-
-    return user_agent, politeness
-
+user_agent = config['Agent']['USERAGENT']
+politeness = float(config['Politeness']['POLITENESS'])
 
 
 def get_rparser(url):
@@ -41,3 +30,42 @@ def get_rparser(url):
 
     return rparser
 
+def can_fetch(url):
+    """
+    Returns whether the URL can be fetched according to the robots.txt file.
+    
+    :param url str: The URL
+    :return: Whether the URL can be fetched
+    :rtype: bool
+
+    """
+    rparser = get_rparser(url)
+    return rparser.can_fetch(user_agent, url)
+
+def respect_delay(url):
+    rparser = get_rparser(url)
+
+    # Get the crawl delay from the robots.txt file
+    crawl_delay = rparser.crawl_delay(user_agent)
+
+    # Respect the politeness setting or the crawl delay, whichever is greater
+    delay = max(politeness, crawl_delay if crawl_delay is not None else 0)
+
+    time.sleep(delay)
+
+def rscraper(url, resp):
+    """
+    Scrapes the URL and returns the links that can be fetched.
+    
+    :param url str: The URL
+    :param resp Response: The response of the URL
+    :return: The links that can be fetched
+    :rtype: list
+
+    """
+    # Respect the crawl delay
+    respect_delay(url)
+
+    # Extract the links from the response
+    links = extract_next_links(url, resp)
+    return [link for link in links if is_valid(link)]
