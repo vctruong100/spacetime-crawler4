@@ -24,7 +24,7 @@ for ((i = 3; i <= $#; i++)); do
 		continue
 	fi
 	unexpand -t $1 --first-only < "${!i}" > .realign.sh.tmp
-    expand -it $2 < .realign.sh.tmp > "${!i}"
+	expand -it $2 < .realign.sh.tmp > "${!i}"
 done
 
 # clean up
