@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
+from page_cache import parse_response
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -17,28 +18,13 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content 
     
-    # Check if response is successful
-    if resp.status == 200 and hasattr(resp.raw_response, 'content'):
-        soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
-        links = set()
-        text_content = []
-
-        # Extract all hyperlinks and convert relative links to absolute links
-        for link in soup.find_all('a', href=True):
-            abs_link = urljoin(resp.url, link['href'])
-            links.add(abs_link)
-
-        # Extract and clean text content
-        for p in soup.find_all(text=True):
-            text = p.strip()
-            if text:
-                text_content.append(text)
-
-        # Return both the list of links and the joined text content
-        return list(links)
-
-    # Return empty list and empty string if the status is not 200 or content is missing
-    return list()
+    # Use parse_response from helper module to handle caching or fetching from cache
+    parsed_response = parsed_response(url, resp)
+    if parsed_response.is_empty():
+        return []
+    
+    # return the links from the cached or newly parsed response
+    return list(parsed_response.links)
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 

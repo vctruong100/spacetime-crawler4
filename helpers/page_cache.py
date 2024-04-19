@@ -61,7 +61,7 @@ def parse_response(url, resp):
 
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
-        soup = BeautifulSoup(resp.raw_response.contet, 'lxml')
+        soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         links = set()
         text_content = []
 
