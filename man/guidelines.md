@@ -44,10 +44,10 @@ $ git rebase master
 When you are done implementing a feature, merge with the `master` branch and update the repo:
 ```bash
 $ git checkout master
-$ git pull origin master	# sync master branch
-$ git merge my-branch		# branch to merge
-$ git branch -d my-branch	# delete branch
-$ git push origin			# update remote repo
+$ git pull origin master    # sync master branch
+$ git merge my-branch       # branch to merge
+$ git branch -d my-branch   # delete branch
+$ git push origin           # update remote repo
 ```
 
 If your changes in `master` branch are synced to your local branch, and you want 
