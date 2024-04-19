@@ -2,13 +2,13 @@ from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse
 import configparser
 import time
-from ..scraper import extract_next_links, is_valid
+from scraper import extract_next_links, is_valid
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-user_agent = config['Agent']['USERAGENT']
-politeness = float(config['Politeness']['POLITENESS'])
+user_agent = config['IDENTIFICATION']['USERAGENT']
+politeness = float(config['CRAWLER']['POLITENESS'])
 
 
 def get_rparser(url):
@@ -25,7 +25,7 @@ def get_rparser(url):
 
     # Create a RobotFileParser object
     rparser = RobotFileParser()
-    rparser.set_url(f"http://{parsed_url.scheme}://{parsed_url.netloc}/robots.txt")
+    rparser.set_url(f"{parsed_url.scheme}://{parsed_url.netloc}/robots.txt")
     rparser.read()
 
     return rparser
