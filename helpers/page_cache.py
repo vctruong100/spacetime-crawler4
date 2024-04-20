@@ -4,7 +4,7 @@
 # good for avoiding redundant work when parsing response
 
 from utils import get_urlhash, normalize
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
 
 PAGE_CACHE = dict()
