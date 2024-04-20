@@ -51,7 +51,9 @@ def parse_response(url, resp):
     if resp.is_redirect:
         # Add redirected link to set of links
         links = set()
-        links.add(resp.url)
+
+        # Get redirected URL, remove fragment, and add to links
+        links.add(urlparse(resp.url)._replace(fragment='').geturl())
 
         # No text content because it's a redirect
         text_content = []
@@ -68,7 +70,12 @@ def parse_response(url, resp):
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
             abs_link = urljoin(resp.url, link['href'])
-            links.add(abs_link)
+            
+            # Normalize the link and remove fragment
+            parsed_link = urlparse(abs_link)
+            new_link = urlunparse(parsed_link._replace(fragment=''))
+
+            links.add(new_link)
 
         # Extract and clean text content
         for p in soup.find_all(text=True):

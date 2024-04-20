@@ -55,8 +55,6 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
             return False
         
-        # Remove URL fragments
-        url = parsed._replace(fragment="").geturl()
         return True
     
     except TypeError:
