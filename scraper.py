@@ -19,7 +19,7 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content 
     
     # Use parse_response from helper module to handle caching or fetching from cache
-    parsed_response = parsed_response(url, resp)
+    parsed_response = parse_response(url, resp)
     if parsed_response.is_empty():
         return []
     
