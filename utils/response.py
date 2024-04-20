@@ -15,3 +15,4 @@ class Response(object):
             self.is_redirect = self.status in {301, 302, 303, 307, 308}
         except TypeError:
             self.raw_response = None
+            self.is_redirect = False
