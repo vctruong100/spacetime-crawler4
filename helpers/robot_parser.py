@@ -30,6 +30,20 @@ def get_rparser(url):
 
     return rparser
 
+def get_sitemap_urls(robots_url):
+    """
+    Returns the sitemap URLs from the robots.txt file.
+
+    :param robots_url str: The URL of the robots.txt file
+    :return: The sitemap URLs
+    :rtype: list
+    
+    """
+    rparser = RobotFileParser()
+    rparser.set_url(robots_url)
+    rparser.read()
+    return rparser.site_maps()
+
 def can_fetch(url):
     """
     Returns whether the URL can be fetched according to the robots.txt file.
