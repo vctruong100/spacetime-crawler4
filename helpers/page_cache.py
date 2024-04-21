@@ -41,7 +41,7 @@ def parse_response(url, resp):
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
-    hash = get_urlhash(normalize(url))
+    hash = get_urlhash(normalize(resp.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
 
@@ -55,7 +55,7 @@ def parse_response(url, resp):
         # Add redirected link to set of links
 
         # Get redirected URL, remove fragment, and add to links
-        parsed_link = urlparse(resp.url)
+        parsed_link = resp.raw_response.headers["Location"]
         new_link = urlunparse(parsed_link._replace(fragment=''))
         links.add(new_link)
 
@@ -86,8 +86,9 @@ def parse_response(url, resp):
 
         # Check if text content is too short 
         if len(text_content) < 1000:
-            PAGE_CACHE[hash] = ParsedResponse(set(), [])
-            return PAGE_CACHE[hash]
+            pass
+            #PAGE_CACHE[hash] = ParsedResponse(set(), [])
+            #return PAGE_CACHE[hash]
     
         # Make ParsedResponse consisting boths
         # the list of links and the joined text content
