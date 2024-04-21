@@ -61,15 +61,15 @@ def main():
         parsed = parse_response(resp_unraw.url, resp_unraw)
         wordcounts = word_count(resp_unraw.url, resp_unraw)
 
-        print("\nLinks extracted:\n", file=fh)
+        print(f"\nLinks extracted ({len(parsed.links)} links):\n", file=fh)
         for l in parsed.links:
             print(l,file=fh)
 
-        print("\nWord counts:\n", file=fh)
+        print(f"\nWord count ({len(wordcounts.keys())} unique words):\n", file=fh)
         for w,c in wordcounts.items():
             print(w,c,file=fh)
 
-        print("\nText found:\n", file=fh)
+        print(f"\nText found ({len(parsed.text_content)} partitions):\n", file=fh)
         for text in parsed.text_content:
             print(text,file=fh)
 
