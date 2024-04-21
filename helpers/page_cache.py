@@ -45,18 +45,21 @@ def parse_response(url, resp):
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
 
+    links = set()
+    text_content = []
+
     # Cached data does not exist, so try parsing resp
 
     # Check if response is a redirect
-    if resp.is_redirect:
+    if resp.raw_response.is_redirect:
         # Add redirected link to set of links
-        links = set()
 
         # Get redirected URL, remove fragment, and add to links
-        links.add(urlparse(resp.url)._replace(fragment='').geturl())
+        parsed_link = urlparse(resp.url)
+        new_link = urlunparse(parsed_link._replace(fragment=''))
+        links.add(new_link)
 
         # No text content because it's a redirect
-        text_content = []
         PAGE_CACHE[hash] = ParsedResponse(links, text_content)
         return PAGE_CACHE[hash]
 
@@ -64,8 +67,6 @@ def parse_response(url, resp):
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-        links = set()
-        text_content = []
 
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):

@@ -10,9 +10,7 @@ class Response(object):
                 pickle.loads(resp_dict["response"])
                 if "response" in resp_dict else
                 None)
-
-            # Check if response is a redirect
-            self.is_redirect = self.status in {301, 302, 303, 307, 308}
+            if self.raw_response and self.raw_response.is_redirect:
+                    self.url = self.raw_response.headers["Location"]
         except TypeError:
             self.raw_response = None
-            self.is_redirect = False
