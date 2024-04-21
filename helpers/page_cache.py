@@ -3,8 +3,7 @@
 # caches parsed response data from a particular url
 # good for avoiding redundant work when parsing response
 
-from utils import get_logger
-from utils import get_urlhash, normalize
+from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
 
