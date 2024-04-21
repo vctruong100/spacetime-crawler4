@@ -42,8 +42,8 @@ def parse_response(url, resp):
     """
 
     # Check for cache server errors
-    if resp.status in range(600, 606+1):
-        PARSE_RESPONSE_LOGGER.error(resp.error)
+    if resp.status in range(600, 606+1) or resp.raw_response is None:
+        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {url}")
         return ParsedResponse(set(), [])
 
     # Hash the normalized url (removes trailing '/')
