@@ -21,7 +21,7 @@ def word_count(url, resp):
     word_dict = dict()
     parsed = parse_response(url, resp)
 
-    for text in text_content:
+    for text in parsed.text_content:
         tokens = tokenize(text)
         for token in tokens:
             word_dict[token] = word_dict.get(token, 0) + 1
