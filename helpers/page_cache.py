@@ -84,7 +84,7 @@ def parse_response(url, resp):
                 text_content.append(text)
 
         # Check if text content is too short or if there are more links than text content
-        if len(text_content) < 100 or len(links > len(text_content)): # Adjust threshold as needed
+        if len(text_content) < 100 or len(links) > len(text_content): # Adjust threshold as needed
             PAGE_CACHE[hash] = ParsedResponse(set(), [])
             return PAGE_CACHE[hash]
     
