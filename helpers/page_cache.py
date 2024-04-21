@@ -78,25 +78,25 @@ def parse_response(url, resp):
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
             abs_link = urljoin(resp.url, link['href'])
-            
+
             # Normalize the link and remove fragment
             parsed_link = urlparse(abs_link)
             new_link = urlunparse(parsed_link._replace(fragment=''))
 
             links.add(new_link)
 
-        # Extract and clean text content
-        for p in soup.find_all(text=True):
-            text = p.strip()
+        # Extract stripped text using soup.stripped_strings
+        # Only include non-empty text in text_content
+        for text in soup.stripped_strings:
             if text:
                 text_content.append(text)
 
-        # Check if text content is too short 
+        # Check if text content is too short
         if len(text_content) < 1000:
             pass
             #PAGE_CACHE[hash] = ParsedResponse(set(), [])
             #return PAGE_CACHE[hash]
-    
+
         # Make ParsedResponse consisting boths
         # the list of links and the joined text content
         PAGE_CACHE[hash] = ParsedResponse(links, text_content)
