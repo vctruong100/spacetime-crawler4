@@ -3,11 +3,14 @@
 # caches parsed response data from a particular url
 # good for avoiding redundant work when parsing response
 
+from utils import get_logger
 from utils import get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
 
 PAGE_CACHE = dict()
+
+PARSE_RESPONSE_LOGGER = get_logger("parse_response")
 
 class ParsedResponse:
     """Encapsulates the data from parsing the raw response data.
@@ -38,6 +41,11 @@ def parse_response(url, resp):
     :return: The parsed response object
     :rtype: ParsedResponse
     """
+
+    # Check for cache server errors
+    if resp.status in range(600, 606+1):
+        PARSE_RESPONSE_LOGGER.error(resp.error)
+        return ParsedResponse(set(), [])
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
