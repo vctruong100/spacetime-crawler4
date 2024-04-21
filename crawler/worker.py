@@ -1,3 +1,5 @@
+# crawler/worker.py
+
 from threading import Thread
 
 from inspect import getsource
