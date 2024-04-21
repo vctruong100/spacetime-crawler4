@@ -36,8 +36,7 @@ def main():
 
         if resp==None:
             print(f"URL {resp_unraw.url} failed with {resp_unraw.status}....politely waiting")
-            if resp_unraw.status in range(600, 606+1):
-                print(f"CACHE ERROR: {resp_unraw.error}")
+            print(f"ERROR: {resp_unraw.error}")
             sleep(config.time_delay)
             continue
 
