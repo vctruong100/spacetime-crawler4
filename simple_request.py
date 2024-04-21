@@ -12,6 +12,7 @@ from utils import get_logger
 from time import sleep
 
 def main():
+    config_file = "config.ini"
     restart = True
 
     cparser = ConfigParser()
@@ -20,7 +21,7 @@ def main():
     config.cache_server = get_cache_server(config, restart)
 
     logger = get_logger("simple_request")
-    log_fh = open("simple_request.log", "a")
+    fh = open("simple_request.log", "a")
 
     while True:
         url = input("enter URL: ")
