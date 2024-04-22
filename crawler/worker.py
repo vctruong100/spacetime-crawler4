@@ -21,7 +21,7 @@ class Worker(Thread):
         
     def run(self):
 
-        retry_delay = [1, 5, 10] # can be adjusted
+        retry_delay = [1, 2, 4, 8, 16]
         
         while True:
             tbd_url = self.frontier.get_tbd_url()
@@ -29,11 +29,16 @@ class Worker(Thread):
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
 
-            # Retry the request after a delay if the request fails
+            # Retry the request after a delay if the request fails due to:
+            # 408 Request Timeout: Server timed out waiting for the request. 
+            # 500 Internal Server Error: Server encountered an unexpected condition. It could be a temporary issue, so a retry might be successful after a delay.
+            # 502 Bad Gateway: The server, acting as a gateway or proxy, received an invalid response from an upstream server. This may also be a temporary issue.
+            # 503 Service Unavailable: The server is currently unable to handle the request, possibly due to overload or maintenance.
+            # 504 Gateway Timeout: The server didn't receive a timely response from an upstream server. 
             retries = 0
             while retries < len(retry_delay):
                 resp = download(tbd_url, self.config, self.logger)
-                if resp.status in {500, 502}:
+                if resp.status in range(500, 505) or resp.status == 408:
                     self.logger.error(f"Failed to download {tbd_url} with status {resp.status}. Retrying in {retry_delay[retries]} seconds.")
                     time.sleep(retry_delay[retries])
                     retries += 1
