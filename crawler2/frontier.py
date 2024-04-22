@@ -57,7 +57,7 @@ class Frontier(object):
         self.dpolmut = PoliteMutex(self.config.time_delay)
 
         self._handle_restart()
-        self._process_robocache()
+        #self._process_robocache()
         self._nap_init()
 
 
