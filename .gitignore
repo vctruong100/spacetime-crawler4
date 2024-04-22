@@ -111,3 +111,7 @@ venv.bak/
 
 # zip files
 *.zip
+
+# nap files from crawler2/nap
+*.nap
+
