@@ -70,20 +70,23 @@ def parse_response(url, resp):
         PAGE_CACHE[hash] = ParsedResponse(links, text_content)
         return PAGE_CACHE[hash]
 
-
+    visited_links = set()
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
-            # abs_link = urljoin(resp.url, link['href'])
+            abs_link = urljoin(resp.url, link['href'])
 
-            # # Normalize the link and remove fragment
-            # parsed_link = urlparse(abs_link)
-            # new_link = urlunparse(parsed_link._replace(fragment=''))
+            # Normalize the link and remove fragment
+            parsed_link = urlparse(abs_link)
+            new_link = urlunparse(parsed_link._replace(fragment=''))
 
-            links.add(link['href'])
+            if new_link not in visited_links:
+                links.add(new_link)
+                visited_links.add(new_link)
+            #links.add(link['href'])
 
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
