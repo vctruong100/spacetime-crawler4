@@ -16,12 +16,16 @@ class Nurl:
 
     absdepth    The absolute depth (relative to seed URL).
 
-    reldepth    The depth relative to its parent URL
+    reldepth    The depth relative to its parent URL.
                 Depth increases by 1 if the URL is a level
                 below the parent URL. Resets to 0 otherwise.
 
+    dupdepth    The depth of duplicate URLs.
+                Depth increases by 1 if the parent URL matches
+                excluding queries and fragments. Resets to 0 otherwise.
+
     words       Tokenized word counts
-    links       Links extracted from this URL
+    links       Links extracted from this URL (stored as hashes)
     """
     def __init__(self, url, d=None):
         if d:
@@ -30,6 +34,7 @@ class Nurl:
             self.parent = d["parent"]
             self.absdepth = d["absdepth"]
             self.reldepth = d["reldepth"]
+            self.dupdepth = d["dupdeth"]
             self.words = d["words"]
             self.links = d["links"]
         else:
@@ -38,6 +43,7 @@ class Nurl:
             self.parent = None
             self.absdepth = 0
             self.reldepth = 0
+            self.dupdepth = 0
             self.words = dict()
             self.links = []
 
