@@ -20,12 +20,30 @@ class Worker(Thread):
         super().__init__(daemon=True)
         
     def run(self):
+
+        retry_delay = [1, 5, 10] # can be adjusted
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            resp = download(tbd_url, self.config, self.logger)
+
+            # Retry the request after a delay if the request fails
+            retries = 0
+            while retries < len(retry_delay):
+                resp = download(tbd_url, self.config, self.logger)
+                if resp.status in {500, 502}:
+                    self.logger.error(f"Failed to download {tbd_url} with status {resp.status}. Retrying in {retry_delay[retries]} seconds.")
+                    time.sleep(retry_delay[retries])
+                    retries += 1
+                else:
+                    break
+
+            # If all retries fail, log the error and move on
+            if retries == len(retry_delay) and resp.status in {500, 502}:
+                self.logger.error(f"Failed to download {tbd_url} after {retries} retries. Moving on.")
+                continue
+
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
