@@ -4,9 +4,9 @@
 # modified from crawler/frontier.py
 # interface uses Nurls (node URLS) instead of urls (strings)
 
+from crawler2.polmut import PoliteMutex
 from crawler2.nap import Nap
 from crawler2.nurl import Nurl
-from crawler2.polmut import PoliteMutex
 from collections import deque
 from threading import RLock
 from utils import get_logger
@@ -31,11 +31,12 @@ class Frontier(object):
 
     nap         The nap object (stores nurl data)
     nurls       Deque object that store nurls to download
-    polmuts     Mapping of PoliteMutex objects
+    domains     Mapping of domains to PoliteMutexes and RobotParsers
                 Enforces multi-threaded politeness per domain.
 
-    n_mutex     Reentrant lock object on self.nurls
-    p_mutex     Lock object on self.polmuts
+    nurlmut     Reentrant lock object on self.nurls
+    domainmut   Reentrant lock object on self.domains
+    dpolmut     PoliteMutex object on downloading any URLs
 
     """
     def __init__(self, config, restart, policy=("dfs",0)):
@@ -50,11 +51,13 @@ class Frontier(object):
         self.policy = policy
 
         self.nurls = deque()
-        self.polmuts = dict()
-        self.n_mutex = RLock()
-        self.p_mutex = Lock()
+        self.domains = dict()
+        self.nurlmut = RLock()
+        self.domainmut = RLock()
+        self.dpolmut = PoliteMutex(self.config.time_delay)
 
         self._handle_restart()
+        self._process_robocache()
         self._nap_init()
 
 
@@ -69,7 +72,7 @@ class Frontier(object):
             return
 
         # Append nurl to deque
-        with self.n_mutex:
+        with self.nurlmut:
             nurls.append(nurl)
 
 
@@ -84,7 +87,7 @@ class Frontier(object):
         """
         try:
             trav, H = self.policy
-            with self.n_mutex:
+            with self.nurlmut:
                 if trav == "dfs":
                     # depth-first search
                     return nurls.pop()
@@ -118,8 +121,12 @@ class Frontier(object):
 
     def _handle_restart(self, restart):
         """Handles the restart flag.
+        Deletes any associated files with saving if restart=True.
         """
-        _save_file_exists = os.path.exists(self.config.save_file)
+        _save_file = self.config.save_file
+        _robocache_file = f"{_save_file}.robocache"
+
+        _save_file_exists = os.path.exists(_save_file)
         if not restart and not _save_file_exists:
             # Save file does not exist, but request to load save
             self.logger.info(
@@ -131,8 +138,12 @@ class Frontier(object):
                 f"Found save file {self.config.save_file}, deleting it.")
             os.remove(self.config.save_file)
 
+        # Silently remove the .robocache file
+        if restart and os.path.exists(_robocache_file):
+            os.remove(_robocache_file)
 
-    def _nap_init():
+
+    def _nap_init(self):
         """Initializes the Nap object.
         Adds seed nurls to the nurls deque.
         Then, it adds nurls not yet downloaded.
@@ -144,6 +155,7 @@ class Frontier(object):
             with self.nap.mutex:
                 nurl = self.nap[url]
                 self.add_nurl(nurl)
+
 
         # Add remaining nurls found in save file
         with self.nap.mutex:
