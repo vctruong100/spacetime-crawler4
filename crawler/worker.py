@@ -22,6 +22,7 @@ class Worker(Thread):
     def run(self):
 
         retry_delay = [1, 5, 10] # can be adjusted
+        
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
