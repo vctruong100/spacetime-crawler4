@@ -51,7 +51,7 @@ def parse_response(url, resp):
     hash = get_urlhash(normalize(resp.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
-
+    
     links = set()
     text_content = []
 
@@ -77,11 +77,11 @@ def parse_response(url, resp):
 
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
-            abs_link = urljoin(resp.url, link['href'])
+            # abs_link = urljoin(resp.url, link['href'])
 
-            # Normalize the link and remove fragment
-            parsed_link = urlparse(abs_link)
-            new_link = urlunparse(parsed_link._replace(fragment=''))
+            # # Normalize the link and remove fragment
+            # parsed_link = urlparse(abs_link)
+            # new_link = urlunparse(parsed_link._replace(fragment=''))
 
             links.add(new_link)
 
