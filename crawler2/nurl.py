@@ -89,6 +89,28 @@ class Nurl:
         self.links = []
 
 
+    @classmethod
+    def from_dict(cls, dic):
+        """Initializes a Nurl object from a dictionary.
+
+        :param dic dict[str, Any]: A dictionary representing a Nurl
+        """
+        # allocate new Nurl instance
+        nurl = cls.__new__(cls)
+
+        # assign based on certain keys in dic
+        nurl.url = dic["url"]
+        nurl.status = dic["status"]
+        nurl.parent = dic["parent"]
+        nurl.absdepth = dic["absdepth"]
+        nurl.reldepth = dic["reldepth"]
+        nurl.dupdeth = dic["dupdepth"]
+        nurl.words = dic["words"]
+        nurl.links = dic["links"]
+
+        return nurl
+
+
     def set_parent(self, parent):
         """Sets the parent of the nurl.
         Attributes are recomputed based on the parent.
@@ -130,26 +152,4 @@ class Nurl:
         self.reldepth = _rd
         self.monodepth = _md
         self.dupdepth = _dd
-
-
-    @classmethod
-    def from_dict(cls, dic):
-        """Initializes a Nurl object from a dictionary.
-
-        :param dic dict[str, Any]: A dictionary representing a Nurl
-        """
-        # allocate new Nurl instance
-        nurl = cls.__new__(cls)
-
-        # assign based on certain keys in dic
-        nurl.url = dic["url"]
-        nurl.status = dic["status"]
-        nurl.parent = dic["parent"]
-        nurl.absdepth = dic["absdepth"]
-        nurl.reldepth = dic["reldepth"]
-        nurl.dupdeth = dic["dupdepth"]
-        nurl.words = dic["words"]
-        nurl.links = dic["links"]
-
-        return nurl
 
