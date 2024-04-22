@@ -4,6 +4,10 @@ from bs4 import BeautifulSoup
 from helpers.page_cache import parse_response
 
 def scraper(url, resp):
+    # Handling not found (404), forbidden (403), and unauthorized pages (401) 
+    if resp.status in {404, 403, 401}:
+        return []
+    
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
