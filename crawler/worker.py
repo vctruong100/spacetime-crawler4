@@ -38,7 +38,7 @@ class Worker(Thread):
             retries = 0
             while retries < len(retry_delay):
                 resp = download(tbd_url, self.config, self.logger)
-                if resp.status in range(500, 511):
+                if resp.status in range(500, 512):
                     self.logger.error(f"Failed to download {tbd_url} with status {resp.status}. Retrying in {retry_delay[retries]} seconds.")
                     time.sleep(retry_delay[retries])
                     retries += 1
