@@ -10,6 +10,7 @@ config.read('config.ini')
 user_agent = config['IDENTIFICATION']['USERAGENT']
 politeness = float(config['CRAWLER']['POLITENESS'])
 
+robot_cache = dict()
 
 def get_rparser(url):
     """
@@ -22,12 +23,20 @@ def get_rparser(url):
     """
     # Extract the network location part of the URL
     parsed_url = urlparse(url)
+    
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    
+    # Check if the RobotFileParser object for the base_url already exists in the cache
+    if base_url in robot_cache:
+        return robot_cache[base_url]
 
-    # Create a RobotFileParser object
     rparser = RobotFileParser()
     rparser.set_url(f"{parsed_url.scheme}://{parsed_url.netloc}/robots.txt")
     rparser.read()
 
+    # Add the new RobotFileParser object to the cache
+    robot_cache[base_url] = rparser
+    
     return rparser
 
 def get_sitemap_urls(robots_url):
