@@ -83,7 +83,7 @@ def parse_response(url, resp):
             # parsed_link = urlparse(abs_link)
             # new_link = urlunparse(parsed_link._replace(fragment=''))
 
-            links.add(new_link)
+            links.add(link['href'])
 
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
