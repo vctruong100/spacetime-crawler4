@@ -28,7 +28,7 @@ class ParsedResponse:
         return len(self.links) == 0 and len(self.text_content) == 0
 
 
-def parse_response(url, resp):
+def parse_response(nurl, resp):
     """Parses the response if it does not exist in PAGE_CACHE and stores it.
     Otherwise, return the cached parsed data.
 
@@ -43,12 +43,12 @@ def parse_response(url, resp):
 
     # Check for cache server errors
     if resp.status in range(600, 606+1) or resp.raw_response is None:
-        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {url}")
+        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {nurl.url}")
         return ParsedResponse(set(), [])
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
-    hash = get_urlhash(normalize(resp.url))
+    hash = get_urlhash(normalize(nurl.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
     
@@ -75,12 +75,12 @@ def parse_response(url, resp):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
 
         # Retrieve the base domain and path to check against infinite loops
-        base_url_parsed = urlparse(url)
+        base_url_parsed = urlparse(nurl.url)
         base_path_segments = set(base_url_parsed.path.strip('/').split('/'))
 
         # Extract all hyperlinks and convert relative links to absolute links
         for link in soup.find_all('a', href=True):
-            abs_link = urljoin(resp.url, link['href'])
+            abs_link = urljoin(nurl.url, link['href'])
 
             parsed_link = urlparse(abs_link)
 
