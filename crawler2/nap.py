@@ -57,13 +57,17 @@ class Nap:
 
     To get and set nurls from naps, use it like a dict.
     Single operations are thread-safe, so you must use nap.mutex
-    to encapsulate multiple operations.
+    to encapsulate multiple operations as one transaction.
     ```
         with nap.mutex:
             nurl = nap[url]
             nurl.absdepth += 1
             nap[url] = nurl
     ```
+
+    Note: Nurls are cached and immutable. Updating multiple attributes of the 
+    same Nurl is treated as one thread-safe operation / transaction when you 
+    write to a Nap object.
 
     fname       Nap filename
     writecnt    Write count since last save
