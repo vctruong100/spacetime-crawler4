@@ -71,7 +71,7 @@ class Nap:
     logger      Logger object
 
     dict        Dictionary with actual data
-    trans       Dictionary with incoming transactions
+    trans       Dictionary with incoming transactions (NOT IMPLEMENTED)
     mutex       Reentrant lock object on dict
     """
     def __init__(self, fname, autosave_interval=2, autosave_threshold=100):
