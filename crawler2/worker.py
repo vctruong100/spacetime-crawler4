@@ -57,9 +57,13 @@ class Worker(Thread):
             # Scrape the nurls
             # Add the nurls
             # Then mark nurl as complete
-            scraped_nurls = scraper.scraper(nurl, resp)
-            for scraped_nurl in scraped_nurls:
-                self.frontier.add_nurl(scraped_nurl)
-            self.frontier.mark_nurl_complete(tbd_nurl)
-
+            ok, err = scraper.scraper(nurl, resp)
+            if ok:
+                scraped_nurls = err
+                for scraped_nurl in scraped_nurls:
+                    self.frontier.add_nurl(scraped_nurl)
+                self.frontier.mark_nurl_complete(tbd_nurl)
+            else:
+                # Try to resolve scraper error
+                pass
 
