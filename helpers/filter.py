@@ -16,9 +16,11 @@ MAX_DUP_DEPTH = 0
 def filter_pre(nurl):
     """Returns whether nurl should be filtered at the
     pre-processing stage (before the response is parsed).
-    Note: nurl.set_parent() must be called prior to this function
+    Note: nurl.set_parent() must be called prior to this function.
 
     :param nurl Nurl: The Nurl object
+    :return: Whether Nurl passes the pre-filter
+    :rtype: bool
     """
     return not (
         nurl.absdepth > MAX_ABS_DEPTH or
@@ -34,6 +36,8 @@ def filter_post(nurl):
     Note: nurl.links and nurl.words must be set prior to this function
 
     :param nurl Nurl: The Nurl object
+    :return: Whether Nurl passes the post-filter
+    :rtype: bool
     """
     return True
 
