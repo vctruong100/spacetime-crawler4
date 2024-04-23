@@ -129,8 +129,6 @@ class Nap:
             _hash = get_urlhash(_norm_url)
             _dict = self.dict.get(_hash, None)
             _nurl = Nurl.from_dict(_dict) if _dict else Nurl(_norm_url)
-            if not _dict:
-                self.dict.__setitem__(_hash, _nurl.__dict__.copy())
             return _nurl
 
 
