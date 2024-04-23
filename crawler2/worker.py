@@ -8,7 +8,7 @@ from threading import Thread
 from inspect import getsource
 from utils.download import download
 from utils import get_logger
-import scraper
+import scraper2 as scraper
 import time
 
 class Worker(Thread):
@@ -16,9 +16,9 @@ class Worker(Thread):
         self.logger = get_logger(f"worker2-{worker_id}", "worker")
         self.config = config
         self.frontier = frontier
-        # basic check for requests in scraper
-        assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper.py"
-        assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper.py"
+        # basic check for requests in scraper2
+        assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper2.py"
+        assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper2.py"
         super().__init__(daemon=True)
 
 
