@@ -7,23 +7,44 @@ from utils import get_urlhash, normalize
 from urllib.parse import urlparse
 from helpers.page_cache import parse_response
 from helpers.filter import filter_pre, filter_post
+from helpers.word_count import to_tokens, word_count
+
+
+# error codes for scraper
+# these are returned as the reason if scraper fails
+# note: some are unused
+E_CLIENT = 0x404
+E_FLTR_PRE = 0xaaff
+E_FLTR_POST = 0xffaa
+E_TEXT_EXACT = 0x8ffe
+E_TEXT_CLOSE = 0x8ffc
+E_TEXT_GNRIC = 0x8ff1
+
 
 def scraper(nurl, resp):
     """Scrapes nurls to crawl from the parent nurl.
     For the scraper stage to succeed, the parent nurl must
     pass filter_post() and children nurls must pass filter_pre() to be included.
+
+    Returns a result tuple (ok, err).
+    If ok (1) is set to True, the result is in err (2).
+    Otherwise, the reason is in err (2).
     """
     # Handles not found (404), forbidden (403), unauthorized (401)
     if resp.status in {401, 403, 404}:
-        return []
+        return (False, E_CLIENT, None)
 
     # Extract nurls
     unchecked_nurls = extract_nurls(nurl, resp)
 
+    # Process text
+    cntsize, tokens, wordcnts = process_text(nurl, resp)
+    nurl.words = wordcnts
+
     # Check if parent nurl passes the
     # post-processing stage
     if not filter_post(nurl):
-        return []
+        return (False, E_FLTR_POST)
 
     # Nurls to be included
     nurls = []
@@ -43,13 +64,12 @@ def scraper(nurl, resp):
         nurl.links.append(_hash)
         nurls.append(chld)
 
-    return nurls # parent is set and urls are valid; children are pre-filtered
+    return (True, nurls) # parent is set and urls are valid; children are pre-filtered
 
 
 def extract_nurls(nurl, resp):
     """Extracts nurls from the parent nurl.
-    Updates nurl with the word counts extracted.
-    Returns the list of nurls extracted.
+    Returns the list of nurls extracted and unfiltered.
 
     (below is a shorter summary of params forked from scraper.py)
 
@@ -67,10 +87,27 @@ def extract_nurls(nurl, resp):
     if parsed_resp.is_empty():
         return []
 
-    # update words before returning the extracted nurls
-    nurl.words = parsed_resp.words
-
     return parsed_resp.links
+
+
+def process_text(nurl, resp):
+    """Processes the text content of the nurl by first extracting it.
+    This tokenizes the text, counts the tokens, and the total grapheme count.
+
+    Returns a tuple consisting of its content_size, its tokens,
+    and its word frequency mapping.
+    """
+    # get cached / newly parsed response
+    parsed_resp = parse_response(nurl, resp)
+
+    # get tokens
+    tokens = to_tokens(parsed_resp.text_content)
+
+    # compute content size and word frequency dict
+    content_size, wordcnts = word_count(tokens)
+
+    # returns content size, tokens, and wordcnts
+    return (content_size, tokens, wordcnts)
 
 
 def is_valid(url):
