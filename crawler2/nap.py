@@ -50,6 +50,11 @@ class _Nap_Autosave(Thread):
                 nap.save()
             sig.wait(alarm)
 
+        # if main thread died and Nap object is unclosed, save one last time
+        if not main_thread().is_alive() and not nap.closed:
+            nap.logger.info("emergency save (main thread died)")
+            nap.save()
+
 
 class Nap:
     """Thread-safe persistent hash maps of Nurls (node urls).
@@ -69,6 +74,7 @@ class Nap:
     same Nurl is treated as one thread-safe operation / transaction when you 
     write to a Nap object.
 
+    closed      Whether Nap object was closed
     fname       Nap filename
     writecnt    Write count since last save
     autosave    Auto-save thread (defaults: 2 seconds, 100 min writes)
@@ -79,6 +85,7 @@ class Nap:
     mutex       Reentrant lock object on dict
     """
     def __init__(self, fname, autosave_interval=2, autosave_threshold=100):
+        self.closed = False
         self.fname = fname
         self.writecnt = 0
         self.autosave = _Nap_Autosave(self, autosave_interval, autosave_threshold)
@@ -166,6 +173,8 @@ class Nap:
 
         # log close message
         self.logger.info(f"successfully closed (final_save={write_ok})")
+
+        self.closed = True # mark as closed
         return write_ok
 
 
