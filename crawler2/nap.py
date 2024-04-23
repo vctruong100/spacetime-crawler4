@@ -52,7 +52,7 @@ class _Nap_Autosave(Thread):
 
         # if main thread died and Nap object is unclosed, save one last time
         if not main_thread().is_alive() and not nap.closed:
-            nap.logger.info("emergency save (main thread died)")
+            nap.logger.info("attempting emergency save (main thread died)")
             nap.save()
 
 
