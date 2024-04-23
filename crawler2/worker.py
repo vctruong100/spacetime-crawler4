@@ -40,11 +40,16 @@ class Worker(Thread):
             # for downloading any URLs.
             # Retries based on retry_delay on server errors (5XX codes)
             resp = None
+            retries = 0
             while True:
                 with self.frontier.dpolmut:
                     resp = download(tbd_nurl.url, self.config, self.logger)
-                if resp.status not in range(500,512):
+                # Only retry if a server error happened (possibly from the cache server)
+                # or there are remaining delays left
+                if resp.status not in range(500,512) or retries >= len(retry_delay):
                     break
+                time.sleep(retry_delay[retries])
+                retries += 1
 
             self.logger.info(
                 f"Downloaded {tbd_nurl.url}, status <{resp.status}>, "
@@ -57,7 +62,7 @@ class Worker(Thread):
             # Scrape the nurls
             # Add the nurls
             # Then mark nurl as complete
-            ok, err = scraper.scraper(nurl, resp)
+            ok, err = scraper.scraper(tbd_nurl, resp)
             if ok:
                 scraped_nurls = err
                 for scraped_nurl in scraped_nurls:
