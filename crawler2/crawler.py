@@ -1,4 +1,4 @@
-# crawler2/__init__.py
+# crawler2/crawler.py
 #
 # the crawler interface for "crawler2"
 # the only changes implemented are logger name change and imports
@@ -6,6 +6,7 @@
 from utils import get_logger
 from crawler2.frontier import Frontier
 from crawler2.worker import Worker
+
 
 class Crawler(object):
     def __init__(self, config, restart, frontier_factory=Frontier, worker_factory=Worker):
