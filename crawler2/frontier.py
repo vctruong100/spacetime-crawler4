@@ -71,6 +71,10 @@ class Frontier(object):
         if nurl.status:
             return
 
+        # Check against duplicates
+        if self.nap.exists(nurl.url):
+            return
+
         # Append nurl to deque
         with self.nurlmut:
             self.nurls.append(nurl)

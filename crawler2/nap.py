@@ -146,6 +146,19 @@ class Nap:
             self.writecnt += 1
 
 
+    def exists(self, url):
+        """Checks if url exists as an entry in the Nap dict.
+
+        :param url str:
+        :return: Whether url exists
+        :rtype: bool
+        """
+        with self.mutex:
+            _norm_url = normalize(url)
+            _hash = get_urlhash(_norm_url)
+            return _hash in self.dict
+
+
     def close(self, max_retries=3):
         """Closes the Nap object.
         Stops autosaving and saves the final dict.
