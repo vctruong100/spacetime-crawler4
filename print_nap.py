@@ -7,6 +7,10 @@ from crawler2.nap import Nap
 
 def main(napfile):
     nap = Nap(napfile)
+
+    nap_hashcnt = len(nap.dict.keys())
+    print(f"{nap_hashcnt} unique links (hashes) found\n")
+
     for k,v in nap.dict.items():
         print(f"BEGIN HASH {k}")
         print("-------------------------------")
@@ -15,7 +19,10 @@ def main(napfile):
                 print(f"{k2}\n")
                 if v2:
                     for w,c in v2.items():
-                        print(w,c)
+                        try:
+                            print(w,c)
+                        except Exception:
+                            print("<encoding error>", w.encode("utf-8"), c)
                 else:
                     print("<None>")
             elif k2 == "links":
