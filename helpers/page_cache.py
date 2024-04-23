@@ -7,7 +7,7 @@ from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
 from crawler2.nurl import Nurl
-
+from filter import filter_pre, filter_post
 PAGE_CACHE = dict()
 
 PARSE_RESPONSE_LOGGER = get_logger("parse_response")
@@ -65,7 +65,6 @@ def parse_response(nurl, resp):
         # Create a new Nurl object with the redirected URL
         # and set the parent to the original Nurl object
         new_link = Nurl(resp.raw_response.headers["Location"])
-        new_link.set_parent(nurl)
         links.add(new_link)
 
         # No text content because it's a redirect
@@ -75,14 +74,13 @@ def parse_response(nurl, resp):
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-        base_url_parsed = Nurl(nurl.url)
+        # base_url_parsed = Nurl(nurl.url)
         # Extract all hyperlinks using soup.find_all('a', href=True) 
         for link in soup.find_all('a', href=True):
             # Add the link to the set of links
             abs_link = urljoin(nurl.url, link['href'])
             new_nurl = Nurl(abs_link)
 
-            new_nurl.set_parent(nurl)
             #links.add(link['href'])
 
             
