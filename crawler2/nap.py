@@ -46,7 +46,7 @@ class _Nap_Autosave(Thread):
             # locking isn't necessary when getting writecnt
             # thread eventually fetches the latest writecnt
             if nap.writecnt >= self.threshold:
-                nap.logger("auto-save threshold met")
+                nap.logger.info("auto-save threshold met")
                 nap.save()
             sig.wait(alarm)
 
