@@ -9,7 +9,7 @@ from utils.download import download
 from utils.server_registration import get_cache_server
 from utils import get_logger
 from helpers.page_cache import parse_response
-from helpers.word_count import word_count
+from helpers.word_count import to_tokens, word_count
 from time import sleep
 
 
@@ -58,7 +58,8 @@ def main():
             print(k,v,file=fh)
 
         parsed = parse_response(resp_unraw.url, resp_unraw)
-        wordcounts = word_count(resp_unraw.url, resp_unraw)
+        _tokens = to_tokens(parsed.text_content)
+        _, wordcounts = word_count(_tokens)
 
         print(f"\nLinks extracted ({len(parsed.links)} links):\n", file=fh)
         for l in parsed.links:

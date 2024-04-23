@@ -4,25 +4,35 @@
 # based on the tokenizer in helpers/tokenize
 
 from helpers.tokenize import tokenize
-from helpers.page_cache import parse_response
 
-def word_count(url, resp):
-    """Aggregates the tokens after tokenizing the response page.
+def to_tokens(text_content):
+    """Returns a list of tokens from after tokenizing text_content.
     See helpers/tokenize for more info on how the tokenizer works,
-    and what tokens are returned).
+    and what tokens are returned.
 
-    Returns a mapping of tokens/words to its frequency.
+    :param text_content list[str]: The text content
+    :return: A list of tokens
+    :rtype: list[str]
+    """
+    tokens = []
+    for text in text_content:
+        _tokenized = tokenize(text)
+        tokens.extend(_tokenized)
+    return tokens
 
-    :param url str: The URL
-    :param resp Response: The response of the URL
-    :return: The mapping of words to its frequency
-    :rtype: dict[str, int]
+def word_count(tokens):
+    """Returns a tuple consisting of the content size (how many graphemes)
+    and the mapping of tokens/words to its frequency.
+
+    :param tokens list[str]: The list of tokens
+    :return: A tuple with content size (1) and the mapping (2)
+    :rtype: (int, dict[str, int])
     """
     word_dict = dict()
-    parsed = parse_response(url, resp)
+    content_size = 0
 
-    for text in parsed.text_content:
-        tokens = tokenize(text)
-        for token in tokens:
-            word_dict[token] = word_dict.get(token, 0) + 1
-    return word_dict
+    for token in tokens:
+        content_size += len(token)
+        word_dict[token] = word_dict.get(token, 0) + 1
+    return (content_size, word_dict)
+
