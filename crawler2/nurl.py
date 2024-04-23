@@ -118,6 +118,16 @@ class Nurl:
 
         :param parent Nurl: The parent nurl.
         """
+        # no parent
+        # reset stats
+        if parent == None:
+            self.parent = None
+            self.absdepth = 0
+            self.reldepth = 0
+            self.monodepth = 0
+            self.dupdepth = 0
+            return
+
         # normalize urls
         chld_url = normalize(self.url)
         prnt_url = normalize(parent.url)
