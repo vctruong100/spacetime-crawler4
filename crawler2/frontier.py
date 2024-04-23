@@ -159,6 +159,7 @@ class Frontier(object):
 
         # Add remaining nurls found in save file
         with self.nap.mutex:
-            for nurl in self.nap.dict.values():
+            for dic in self.nap.dict.values():
+                nurl = Nurl.from_dict(dic)
                 self.add_nurl(nurl)
 
