@@ -77,14 +77,14 @@ class Nap:
     closed      Whether Nap object was closed
     fname       Nap filename
     writecnt    Write count since last save
-    autosave    Auto-save thread (defaults: 2 seconds, 100 min writes)
+    autosave    Auto-save thread (defaults: 2 seconds, 20 min writes)
     logger      Logger object
 
     dict        Dictionary with actual data
     trans       Dictionary with incoming transactions (NOT IMPLEMENTED)
     mutex       Reentrant lock object on dict
     """
-    def __init__(self, fname, autosave_interval=2, autosave_threshold=100):
+    def __init__(self, fname, autosave_interval=2, autosave_threshold=20):
         self.closed = False
         self.fname = fname
         self.writecnt = 0
