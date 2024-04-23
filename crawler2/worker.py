@@ -33,7 +33,7 @@ class Worker(Thread):
             # Each element corresponds to how long the thread should sleep
             # (which means how long the worker thread is stuck on this nurl).
             # The amount of delays can be adjusted.
-            retry_delay = [1, 5, 10]
+            retry_delay = [1, 2, 4, 8, 16]
 
             # Downloads the response
             # Forces downloads to go through the polite mutex
