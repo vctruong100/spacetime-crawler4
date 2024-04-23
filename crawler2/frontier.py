@@ -56,12 +56,12 @@ class Frontier(object):
         self.domainmut = RLock()
         self.dpolmut = PoliteMutex(self.config.time_delay)
 
-        self._handle_restart()
+        self._handle_restart(restart)
         #self._process_robocache()
         self._nap_init()
 
 
-    def add_nurl(nurl):
+    def add_nurl(self, nurl):
         """Adds nurl to the nurls deque.
         If nurl was already downloaded, nurl is ignored.
 
@@ -73,10 +73,10 @@ class Frontier(object):
 
         # Append nurl to deque
         with self.nurlmut:
-            nurls.append(nurl)
+            self.nurls.append(nurl)
 
 
-    def get_tbd_nurl():
+    def get_tbd_nurl(self):
         """Gets the next un-downloaded nurl to download
         based on the frontier's traversal policy.
         Returns None if there are no more nurls.
@@ -90,24 +90,24 @@ class Frontier(object):
             with self.nurlmut:
                 if trav == "dfs":
                     # depth-first search
-                    return nurls.pop()
+                    return self.nurls.pop()
                 elif trav == "bfs":
                     # breadth-first search
-                    return nurls.popleft()
+                    return self.nurls.popleft()
                 elif trav == "hybrid":
                     # hybrid search
                     # does breadth-first until the first absdepth > H
-                    top = nurls.popleft()
+                    top = self.nurls.popleft()
                     if top.absdepth <= H:
                         return top
                     else:
-                        nurls.appendleft(nurl) # add back top
-                        return nurls.pop()
+                        self.nurls.appendleft(nurl) # add back top
+                        return self.nurls.pop()
         except IndexError:
             return None
 
 
-    def mark_nurl_complete(nurl):
+    def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
         Stops the crawler from re-downloading the URL.
         Only call this after the nurl has recomputed its attributes.
