@@ -128,7 +128,10 @@ class Nap:
             _norm_url = normalize(url)
             _hash = get_urlhash(_norm_url)
             _dict = self.dict.get(_hash, None)
-            return Nurl.from_dict(_dict) if _dict else Nurl(_norm_url)
+            _nurl = Nurl.from_dict(_dict) if _dict else Nurl(_norm_url)
+            if not _dict:
+                self.dict.__setitem__(_hash, _nurl.__dict__.copy())
+            return _nurl
 
 
     def __setitem__(self, url, nurl):
@@ -142,7 +145,7 @@ class Nap:
         """
         with self.mutex:
             _hash = get_urlhash(normalize(url))
-            self.dict.__setitem__(_hash, nurl.__dict__)
+            self.dict.__setitem__(_hash, nurl.__dict__.copy())
             self.writecnt += 1
 
 
