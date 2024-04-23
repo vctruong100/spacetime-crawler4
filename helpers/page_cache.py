@@ -6,6 +6,7 @@
 from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
+from crawler2.nurl import Nurl
 
 PAGE_CACHE = dict()
 
@@ -28,7 +29,7 @@ class ParsedResponse:
         return len(self.links) == 0 and len(self.text_content) == 0
 
 
-def parse_response(url, resp):
+def parse_response(nurl, resp):
     """Parses the response if it does not exist in PAGE_CACHE and stores it.
     Otherwise, return the cached parsed data.
 
@@ -43,12 +44,12 @@ def parse_response(url, resp):
 
     # Check for cache server errors
     if resp.status in range(600, 606+1) or resp.raw_response is None:
-        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {url}")
+        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {nurl.url}")
         return ParsedResponse(set(), [])
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
-    hash = get_urlhash(normalize(url))
+    hash = get_urlhash(normalize(nurl.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
     
@@ -61,9 +62,10 @@ def parse_response(url, resp):
     if resp.raw_response.is_redirect:
         # Add redirected link to set of links
 
-        # Get redirected URL, remove fragment, and add to links
-        parsed_link = resp.raw_response.headers["Location"]
-        new_link = urlunparse(parsed_link._replace(fragment=''))
+        # Create a new Nurl object with the redirected URL
+        # and set the parent to the original Nurl object
+        new_link = Nurl(resp.raw_response.headers["Location"])
+        new_link.set_parent(nurl)
         links.add(new_link)
 
         # No text content because it's a redirect
@@ -73,26 +75,22 @@ def parse_response(url, resp):
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-
-        # Retrieve the base domain and path to check against infinite loops
-        base_url_parsed = urlparse(url)
-        base_path_segments = set(base_url_parsed.path.strip('/').split('/'))
-
-        # Extract all hyperlinks and convert relative links to absolute links
+        base_url_parsed = Nurl(nurl.url)
+        # Extract all hyperlinks using soup.find_all('a', href=True) 
         for link in soup.find_all('a', href=True):
-            abs_link = urljoin(url, link['href'])
+            # Add the link to the set of links
+            abs_link = urljoin(nurl.url, link['href'])
+            new_nurl = Nurl(abs_link)
 
-            parsed_link = urlparse(abs_link)
-
-            # Check if the link is within the same site and not causing loops
-            if parsed_link.netloc == base_url_parsed.netloc:
-                link_segment = set(parsed_link.path.strip('/').split('/'))
-                if not link_segment & base_path_segments:
-                    new_link = urlunparse(parsed_link._replace(fragment=''))
-                    links.add(new_link)
-
+            new_nurl.set_parent(nurl)
             #links.add(link['href'])
 
+            
+            # if base_url_parsed.netloc == new_nurl.netloc:
+            #     # Check if the path of the link is not a subset of the base URL path
+            #     if not set(abs_link.path.strip('/').split('/')) & set(base_url_parsed.path.strip('/').split('/')):
+            links.add(new_nurl)
+            
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
         for text in soup.stripped_strings:
