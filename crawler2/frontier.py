@@ -64,12 +64,18 @@ class Frontier(object):
     def add_nurl(self, nurl):
         """Adds nurl to the nurls deque.
         If nurl was already downloaded, nurl is ignored.
+        If nurl is not in the nap, add to the nap.
 
         :param nurl Nurl: The nurl object
         """
         # Already downloaded
         if nurl.status == 0x2:
             return
+
+	# Add nurl to nap iff it doesn't exist
+        with self.nap.mutex:
+            if not self.nap.exists(nurl.url):
+                self.nap[nurl.url] = nurl
 
         # Append nurl to deque
         with self.nurlmut:
@@ -126,10 +132,10 @@ class Frontier(object):
             # these converge to the nurl downloading (which isn't ideal)
             with self.nap.mutex:
                 # note: nurls are cached
-                # fetch the actual nurl data iff it exists
-                # if un-downloaded, update status and return
-                if self.nap.exists(nurl.url):
-                    nurl = self.nap[nurl.url]
+                # fetch the actual nurl data, which is
+                # guaranteed to exist because of add_nurl
+                # if un-downloaded, update status and return the nurl
+                nurl = self.nap[nurl.url]
                 if nurl.status == 0x0:
                     nurl.status = 0x1 # in-use
                     self.nap[nurl.url] = nurl
@@ -184,13 +190,23 @@ class Frontier(object):
         for url in self.config.seed_urls:
             with self.nap.mutex:
                 nurl = self.nap[url]
-                if nurl.status == 0x0 or nurl.status == 0x1:
+                # remove intermediate state
+                if nurl.status == 0x1:
+                    nurl.status = 0x0
+                    self.nap[url] = nurl
+		# not yet downloaded
+                if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
         # Add remaining nurls found in save file
         with self.nap.mutex:
             for dic in self.nap.dict.values():
                 nurl = Nurl.from_dict(dic)
-                if nurl.status == 0x0 or nurl.status == 0x1:
+                # remove intermediate state
+                if nurl.status == 0x1:
+                    nurl.status = 0x0
+                    self.nap[nurl.url] = nurl
+		# not yet downloaded
+                if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
