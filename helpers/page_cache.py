@@ -4,7 +4,7 @@
 # good for avoiding redundant work when parsing response
 
 from utils import get_logger, get_urlhash, normalize
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin, urlparse, urldefrag
 from bs4 import BeautifulSoup
 from crawler2.nurl import Nurl
 
@@ -79,6 +79,13 @@ def parse_response(nurl, resp):
         for link in soup.find_all('a', href=True):
             # Add the link to the set of links
             abs_link = urljoin(nurl.url, link['href'])
+
+            # Defrag the url
+            abs_link = urldefrag(abs_link).url
+
+            # Normalize the url
+            abs_link = normalize(abs_link)
+
             new_nurl = Nurl(abs_link)
 
             #links.add(link['href'])
