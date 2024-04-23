@@ -142,7 +142,7 @@ class Nurl:
                 0,
                 parent.dupdepth + 1
             )
-        elif rel_dir_depth >= 1:
+        elif _rel_dirdepth >= 1:
             # below (directly and strictly)
             _rd, _md, _dd = (
                 0 if _rel_dirdepth > 1 else parent.reldepth + 1,
