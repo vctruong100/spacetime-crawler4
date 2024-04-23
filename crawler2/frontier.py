@@ -126,9 +126,10 @@ class Frontier(object):
             # these converge to the nurl downloading (which isn't ideal)
             with self.nap.mutex:
                 # note: nurls are cached
-                # fetch the actual nurl data
+                # fetch the actual nurl data iff it exists
                 # if un-downloaded, update status and return
-                nurl = self.nap[nurl.url]
+                if self.nap.exists(nurl.url):
+                    nurl = self.nap[nurl.url]
                 if nurl.status == 0x0:
                     nurl.status = 0x1 # in-use
                     self.nap[nurl.url] = nurl
