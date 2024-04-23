@@ -134,8 +134,8 @@ class Nurl:
         # monotonic increases iff nurl is strictly below parent
         # duplicate increases iff nurl is in the same level as parent
         _rd, _md, _dd = 0, 0, 0
-        rel_dir_depth = _compute_rel_dirdepth(chld_url, prnt_url)
-        if rel_dir_depth == 0:
+        _rel_dirdepth = _compute_rel_dirdepth(chld_url, prnt_url)
+        if _rel_dirdepth == 0:
             # same level
             _rd, _md, _dd = (
                 0,
@@ -145,7 +145,7 @@ class Nurl:
         elif rel_dir_depth >= 1:
             # below (directly and strictly)
             _rd, _md, _dd = (
-                0 if _rel_dir_depth > 1 else parent.reldepth + 1,
+                0 if _rel_dirdepth > 1 else parent.reldepth + 1,
                 parent.monodepth + 1,
                 0
             )
