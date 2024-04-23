@@ -27,6 +27,10 @@ class Crawler(object):
         self.start_async()
         self.join()
 
+        # all worker threads have finished
+        # close the nap file before killing the main thread
+        self.frontier.nap.close()
+
     def join(self):
         for worker in self.workers:
             worker.join()
