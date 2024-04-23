@@ -104,7 +104,8 @@ class Nurl:
         nurl.parent = dic["parent"]
         nurl.absdepth = dic["absdepth"]
         nurl.reldepth = dic["reldepth"]
-        nurl.dupdeth = dic["dupdepth"]
+        nurl.monodepth = dic["monodepth"]
+        nurl.dupdepth = dic["dupdepth"]
         nurl.words = dic["words"]
         nurl.links = dic["links"]
 
