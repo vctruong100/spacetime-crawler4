@@ -7,7 +7,7 @@ from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urlunparse
 from bs4 import BeautifulSoup
 from crawler2.nurl import Nurl
-from filter import filter_pre, filter_post
+
 PAGE_CACHE = dict()
 
 PARSE_RESPONSE_LOGGER = get_logger("parse_response")
