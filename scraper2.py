@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from helpers.page_cache import parse_response
 from helpers.filter import filter_pre, filter_post
 from helpers.word_count import to_tokens, word_count
-
+from helpers.simhash import simhash
 
 # error codes for scraper
 # these are returned as the reason if scraper fails
@@ -38,7 +38,7 @@ def scraper(nurl, resp):
     unchecked_nurls = extract_nurls(nurl, resp)
 
     # Process text
-    cntsize, tokens, wordcnts = process_text(nurl, resp)
+    cntsize, tokens, wordcnts, fingerprint = process_text(nurl, resp)
     nurl.words = wordcnts
 
     # Check if parent nurl passes the
@@ -62,7 +62,7 @@ def scraper(nurl, resp):
         # add hash to nurl.links and append to nurls
         _hash = get_urlhash(normalize(chld.url))
         nurl.links.append(_hash)
-        nurls.append(chld)
+        nurls.append((chld, fingerprint)) # add fingerprint for simhash comparison
 
     return (True, nurls) # parent is set and urls are valid; children are pre-filtered
 
@@ -106,8 +106,11 @@ def process_text(nurl, resp):
     # compute content size and word frequency dict
     content_size, wordcnts = word_count(tokens)
 
-    # returns content size, tokens, and wordcnts
-    return (content_size, tokens, wordcnts)
+    # compute simhash
+    fingerprint = simhash(wordcnts); 
+
+    # returns content size, tokens, wordcnts, fingerprint
+    return (content_size, tokens, wordcnts, fingerprint)
 
 
 def is_valid(url):
