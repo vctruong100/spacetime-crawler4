@@ -32,7 +32,7 @@ def scraper(nurl, resp):
     """
     # Handles not found (404), forbidden (403), unauthorized (401)
     if resp.status in {401, 403, 404}:
-        return (False, E_CLIENT, None)
+        return (False, E_CLIENT)
 
     # Extract nurls
     unchecked_nurls = extract_nurls(nurl, resp)
