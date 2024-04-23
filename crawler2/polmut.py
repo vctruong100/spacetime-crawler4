@@ -12,7 +12,7 @@ class PoliteMutex:
     _mutex: Lock object
     _politeness: Politeness time delay
     """
-    def __init__(politeness):
+    def __init__(self, politeness):
         self._politeness = politeness
         self._mutex = Lock()
 
