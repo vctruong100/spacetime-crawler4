@@ -68,11 +68,7 @@ class Frontier(object):
         :param nurl Nurl: The nurl object
         """
         # Already downloaded
-        if nurl.status:
-            return
-
-        # Check against duplicates
-        if self.nap.exists(nurl.url):
+        if nurl.status == 0x2:
             return
 
         # Append nurl to deque
@@ -81,7 +77,7 @@ class Frontier(object):
 
 
     def get_tbd_nurl(self):
-        """Gets the next un-downloaded nurl to download
+        """Gets the next un-downloaded nurl not in-use to download
         based on the frontier's traversal policy.
         Returns None if there are no more nurls.
 
@@ -89,26 +85,54 @@ class Frontier(object):
         :return: The next un-downloaded nurl
         :rtype: Nurl | None
         """
-        try:
-            trav, H = self.policy
-            with self.nurlmut:
+        # exhaust the nurls deque until it
+        # retrieves a valid nurl
+        while True:
+            nurl = None
+            # thread-safe nurl retrieval
+            # note: deque being thread-safe is not sufficient
+            # because of the intermediate state of hybrid traversal
+            try:
+                trav, H = self.policy
+
+                # lock nurls deque
+                self.nurlmut.acquire()
+
+                # perform some traversal depending on the policy
                 if trav == "dfs":
                     # depth-first search
-                    return self.nurls.pop()
+                    nurl = self.nurls.pop()
                 elif trav == "bfs":
                     # breadth-first search
-                    return self.nurls.popleft()
+                    nurl = self.nurls.popleft()
                 elif trav == "hybrid":
                     # hybrid search
                     # does breadth-first until the first absdepth > H
-                    top = self.nurls.popleft()
-                    if top.absdepth <= H:
+                    _top = self.nurls.popleft()
+                    if _top.absdepth <= H:
                         return top
                     else:
                         self.nurls.appendleft(nurl) # add back top
-                        return self.nurls.pop()
-        except IndexError:
-            return None
+                        nurl = self.nurls.pop()
+            except IndexError:
+                # nurls must be empty
+                return None
+            finally:
+                # unlock nurls deque
+                self.nurlmut.release()
+
+            # check status
+            # ignore status codes {0x1, 0x2}
+            # these converge to the nurl downloading (which isn't ideal)
+            with self.nap.mutex:
+                # note: nurls are cached
+                # fetch the actual nurl data
+                # if un-downloaded, update status and return
+                nurl = self.nap[nurl.url]
+                if nurl.status == 0x0:
+                    nurl.status = 0x1 # in-use
+                    self.nap[nurl.url] = nurl
+                    return nurl
 
 
     def mark_nurl_complete(self, nurl):
@@ -118,7 +142,7 @@ class Frontier(object):
 
         :param nurl Nurl: The nurl object
         """
-        nurl.status = True
+        nurl.status = 0x2 # downloaded
         with self.nap.mutex:
             self.nap[nurl.url] = nurl
 
@@ -150,20 +174,22 @@ class Frontier(object):
     def _nap_init(self):
         """Initializes the Nap object.
         Adds seed nurls to the nurls deque.
-        Then, it adds nurls not yet downloaded.
+        Then, it adds nurls that were either
+        not yet downloaded or in an intermediate state.
         """
         self.nap = Nap(self.config.save_file)
 
-        # Add seed urls (if it's not downloaded or doesn't exist)
+        # Add seed urls (if it's not downloaded or in an intermediate state)
         for url in self.config.seed_urls:
             with self.nap.mutex:
                 nurl = self.nap[url]
-                self.add_nurl(nurl)
-
+                if nurl.status == 0x0 or nurl.status == 0x1:
+                    self.add_nurl(nurl)
 
         # Add remaining nurls found in save file
         with self.nap.mutex:
             for dic in self.nap.dict.values():
                 nurl = Nurl.from_dict(dic)
-                self.add_nurl(nurl)
+                if nurl.status == 0x0 or nurl.status == 0x1:
+                    self.add_nurl(nurl)
 

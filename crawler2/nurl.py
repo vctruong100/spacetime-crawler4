@@ -51,7 +51,12 @@ class Nurl:
             that followed a URL, thrice.
 
     url         The URL itself.
-    status      Whether the URL was downloaded.
+
+    status      The intermediate state of the URL as an int.
+                    -   0x0: un-downloaded
+                    -   0x1: in-use
+                    -   0x2: downloaded
+
     parent      The hash of the parent URL (where the URL was found).
 
     absdepth    The absolute depth (relative to seed URL).
@@ -71,6 +76,7 @@ class Nurl:
                 fragments. Resets to 0 otherwise.
 
     words       Tokenized word counts
+
     links       Links extracted from this URL (stored as hashes)
     """
     def __init__(self, url):
@@ -79,7 +85,7 @@ class Nurl:
         :param url str: The URL
         """
         self.url = url
-        self.status = False
+        self.status = 0x0
         self.parent = None
         self.absdepth = 0
         self.reldepth = 0
