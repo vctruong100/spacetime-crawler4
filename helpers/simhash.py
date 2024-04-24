@@ -1,5 +1,7 @@
 import hashlib
 
+THRESHOLD = 5
+
 def simhash(wordcnts):
     """
     Compute the simhash fingerprint of a document.
@@ -37,3 +39,12 @@ def hamming_distance(hash1, hash2):
         if hash1[i] != hash2[i]:
             distance += 1
     return distance
+
+def compare_fingerprints(distance):
+    """
+    Compare the distance between two fingerprints to a threshold.
+    :param distance: The hamming distance between two fingerprints.
+    :return: True if the distance is less than the threshold, False otherwise.
+    """
+    
+    return distance <= THRESHOLD
