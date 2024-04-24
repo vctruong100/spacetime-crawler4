@@ -37,8 +37,6 @@ class Frontier(object):
     nurlmut     Reentrant lock object on self.nurls
     domainmut   Reentrant lock object on self.domains
     dpolmut     PoliteMutex object on downloading any URLs
-    fingerprints Mapping of fingerprints to URLs
-    similarity_threshold Similarity threshold for fingerprints (can be adjusted)
 
     """
     def __init__(self, config, restart, policy=("dfs",0)):
@@ -57,8 +55,6 @@ class Frontier(object):
         self.nurlmut = RLock()
         self.domainmut = RLock()
         self.dpolmut = PoliteMutex(self.config.time_delay)
-        self.fingerprints = {}
-        self.similarity_threshold = 5.0 # 5 is very similar, 10 is somewhat similar
 
         self._handle_restart(restart)
         #self._process_robocache()
@@ -83,25 +79,7 @@ class Frontier(object):
 
         # Append nurl to deque
         with self.nurlmut:
-            if self.compare_fingerprints(fingerprint):
-                self.logger.info(f"Similar content found: {nurl.url}")
-                return
             self.nurls.append(nurl)
-            self.fingerprints[nurl.url] = fingerprint
-    
-    def compare_fingerprints(self, new_fingerprint):
-        """Compares the fingerprint to the existing fingerprints.
-        Returns True if the fingerprint is similar to any existing
-        fingerprints, False otherwise.
-
-        :param fingerprint str: The fingerprint
-        :return: Whether the fingerprint is similar to any existing fingerprints
-        :rtype: bool
-        """
-        for fp in self.fingerprints.values():
-            if bin(fp & new_fingerprint).count("1") <= self.similarity_threshold:
-                return True
-        return False
     
     def get_tbd_nurl(self):
         """Gets the next un-downloaded nurl not in-use to download
