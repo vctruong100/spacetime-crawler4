@@ -1,34 +1,35 @@
 import hashlib
 
-def simhash(wordcnts, hashbits=128):
+def simhash(wordcnts):
     """
-    Compute the simhash fingerprint of a page.    
+    Compute the simhash fingerprint of a document.
     :param wordcnts: A dictionary of word counts.
-    :param hashbits: The number of bits in the fingerprint.
-    :return: The simhash fingerprint.
-    
+    :return: The simhash fingerprint of the document.
     """
-    
-    # Initialize the simhash fingerprint
-    simhash = [0] * hashbits
+    # Size of the hash vector
+    hash_size = 8
+    v = [0] * hash_size
 
     for word, cnt in wordcnts.items():
-        # Compute the hash of the word based on the full 256-bit hash
-        wordhash = int(hashlib.sha256(word.encode('utf-8')).hexdigest(), 16)
+        # Create binary hash of the word
+        word_hash = hash(word) % (2 ** hash_size)
+        binary_hash = format(word_hash, f'0{hash_size}b')
 
         # Update the simhash fingerprint
-        for i in range(hashbits):
-            # Create a bitmask to isolate the i-th bit
-            bitmask = 1 << i
-            # Check if the i-th bit is set and update vector
-            if wordhash & bitmask:
-                simhash[i] += cnt # Add the count if bit is 1
-            else:
-                simhash[i] -= cnt # Subtract the count if bit is 0
+        for i in range(hash_size):
+            bit_value = 1 if binary_hash[i] == '1' else -1
+            v[i] += bit_value * cnt # update the vector with the word count multiplied by the bit value (1/0)
 
-    fingerprint = 0
-    for i in range(hashbits):
-        if simhash[i] > 0:
-            fingerprint |= 1 << i # Set the i-th bit if simhash[i] > 0
+    # Form simhash fingerprint by converting the vector to a binary string
+    fingerprint = ''.join(['1' if i > 0 else '0' for i in v]) # append 1 if positive or 0 otherwise
 
-    return fingerprint
+    return int(fingerprint, 2) # convert the binary string to a binary integer
+
+def hamming_distance(hash1, hash2):
+    """
+    Compute the hamming distance between two hashes.
+    :param hash1: The first hash.
+    :param hash2: The second hash.
+    :return: The hamming distance between the two hashes.
+    """
+    return bin(hash1 ^ hash2).count('1') # count the number of bits that differ between the two hashes
