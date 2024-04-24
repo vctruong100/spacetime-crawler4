@@ -9,7 +9,7 @@ def simhash(wordcnts):
     :return: The simhash fingerprint of the document.
     """
     # Size of the hash vector
-    hash_size = 8
+    hash_size = 32
     v = [0] * hash_size
 
     for word, cnt in wordcnts.items():
