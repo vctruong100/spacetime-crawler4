@@ -40,11 +40,12 @@ def hamming_distance(hash1, hash2):
             distance += 1
     return distance
 
-def compare_fingerprints(distance):
+def compare_fingerprints(hash1, hash2):
     """
-    Compare the distance between two fingerprints to a threshold.
-    :param distance: The hamming distance between two fingerprints.
-    :return: True if the distance is less than the threshold, False otherwise.
+    Compare two simhash fingerprints.
+    :param hash1: The first hash.
+    :param hash2: The second hash.
+    :return: True if the fingerprints are similar, False otherwise.
     """
     
-    return distance <= THRESHOLD
+    return hamming_distance(hash1, hash2) <= THRESHOLD
