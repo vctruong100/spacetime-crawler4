@@ -57,13 +57,14 @@ def scraper(nurl, resp):
         chld.set_parent(nurl)
         if not filter_pre(nurl):
             continue
-
+        
+        chld.simhash = fingerprint
         # filtered child
         # add hash to nurl.links and append to nurls
         _hash = get_urlhash(normalize(chld.url))
         nurl.links.append(_hash)
-        nurls.append((chld, fingerprint)) # add fingerprint for simhash comparison
-
+        nurls.append(chld) 
+        
     return (True, nurls) # parent is set and urls are valid; children are pre-filtered
 
 
