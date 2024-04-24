@@ -23,7 +23,7 @@ def simhash(wordcnts):
     # Form simhash fingerprint by converting the vector to a binary string
     fingerprint = ''.join(['1' if i > 0 else '0' for i in v]) # append 1 if positive or 0 otherwise
 
-    return int(fingerprint, 2) # convert the binary string to a binary integer
+    return fingerprint
 
 def hamming_distance(hash1, hash2):
     """
@@ -32,4 +32,8 @@ def hamming_distance(hash1, hash2):
     :param hash2: The second hash.
     :return: The hamming distance between the two hashes.
     """
-    return bin(hash1 ^ hash2).count('1') # count the number of bits that differ between the two hashes
+    distance = 0
+    for i in range(len(hash1)):
+        if hash1[i] != hash2[i]:
+            distance += 1
+    return distance
