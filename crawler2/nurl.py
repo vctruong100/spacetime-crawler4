@@ -59,6 +59,11 @@ class Nurl:
 
     parent      The hash of the parent URL (where the URL was found).
 
+    exhash      Exact hash of the text content.
+
+    smhash      Similarity hash for comparing against webpages.
+                Also known as a fingerprint.
+
     absdepth    The absolute depth (relative to seed URL).
 
     reldepth    The depth relative to its parent URL.
@@ -75,24 +80,41 @@ class Nurl:
                 the URL and the parent URL excluding queries and
                 fragments. Resets to 0 otherwise.
 
-    words       Tokenized word counts
+    size        Size of text content in bytes
+
+    words       Tokenized word counts from the text content
 
     links       Links extracted from this URL (stored as hashes)
+
+    exlinks     Exact links based on the exact hash
+
+    smlinks     Similar links based on the similar hash
+
     """
     def __init__(self, url):
         """Initializes a Nurl object from the URL.
 
         :param url str: The URL
         """
+        # internals
         self.url = url
         self.status = 0x0
         self.parent = None
+        self.exhash = None
+        self.smhash = None
+
+        # pre-processed
         self.absdepth = 0
         self.reldepth = 0
         self.monodepth = 0
         self.dupdepth = 0
+
+        # post-processed
+        self.size = 0
         self.words = dict()
         self.links = []
+        self.exlinks = []
+        self.smlinks = []
 
 
     @classmethod
@@ -105,15 +127,25 @@ class Nurl:
         nurl = cls.__new__(cls)
 
         # assign based on certain keys in dic
+        # internals
         nurl.url = dic["url"]
         nurl.status = dic["status"]
         nurl.parent = dic["parent"]
+        nurl.exhash = dic["exhash"]
+        nurl.smhash = dic["smhash"]
+
+        # pre-processed
         nurl.absdepth = dic["absdepth"]
         nurl.reldepth = dic["reldepth"]
         nurl.monodepth = dic["monodepth"]
         nurl.dupdepth = dic["dupdepth"]
+
+        # post-processed
+        nurl.size = dic["size"]
         nurl.words = dic["words"]
         nurl.links = dic["links"]
+        nurl.exlinks = dic["exlinks"]
+        nurl.smlinks = dic["smlinks"]
 
         return nurl
 
