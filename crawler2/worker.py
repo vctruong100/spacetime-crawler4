@@ -65,8 +65,8 @@ class Worker(Thread):
             ok, err = scraper.scraper(tbd_nurl, resp)
             if ok:
                 scraped_nurls = err
-                for scraped_nurl in scraped_nurls:
-                    self.frontier.add_nurl(scraped_nurl)
+                for scraped_nurl, fingerprint in scraped_nurls:
+                    self.frontier.add_nurl(scraped_nurl, fingerprint)
                 self.frontier.mark_nurl_complete(tbd_nurl)
             else:
                 # Try to resolve scraper error
