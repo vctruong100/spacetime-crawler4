@@ -8,6 +8,7 @@ from threading import Thread
 from inspect import getsource
 from utils.download import download
 from utils import get_logger
+from helpers.robot_parser import can_fetch, respect_delay
 import scraper2 as scraper
 import time
 
@@ -28,6 +29,12 @@ class Worker(Thread):
             if not tbd_nurl:
                 self.logger.info("Frontier is empty. Stopping Crawler")
                 break
+
+            if not can_fetch(tbd_nurl.url):
+                self.logger.info("Access to {tbd_nurl.url} is blocked by robots.txt")
+                continue
+
+            respect_delay(tbd_nurl.url)
 
             # Downloads are retried up until all delays are exhausted.
             # Each element corresponds to how long the thread should sleep
