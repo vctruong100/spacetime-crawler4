@@ -58,7 +58,8 @@ def scraper(nurl, resp):
         if not filter_pre(nurl):
             continue
         
-        chld.simhash = fingerprint
+        chld.smhash = fingerprint
+        chld.size = cntsize
         # filtered child
         # add hash to nurl.links and append to nurls
         _hash = get_urlhash(normalize(chld.url))
