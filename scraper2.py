@@ -20,7 +20,6 @@ E_TEXT_EXACT = 0x8ffe
 E_TEXT_CLOSE = 0x8ffc
 E_TEXT_GNRIC = 0x8ff1
 
-
 def scraper(nurl, resp):
     """Scrapes nurls to crawl from the parent nurl.
     For the scraper stage to succeed, the parent nurl must
@@ -33,13 +32,18 @@ def scraper(nurl, resp):
     # Handles not found (404), forbidden (403), unauthorized (401)
     if resp.status in {401, 403, 404}:
         return (False, E_CLIENT)
-
+    
     # Extract nurls
     unchecked_nurls = extract_nurls(nurl, resp)
 
     # Process text
     cntsize, tokens, wordcnts, fingerprint = process_text(nurl, resp)
     nurl.words = wordcnts
+
+    # Check for low-content value and if size is more than 1 MB
+    if sum(wordcnts.values()) < 200 or cntsize > 1e6:
+        return (False, "Low info content")
+    
     nurl.smhash = fingerprint
     nurl.size = cntsize
 

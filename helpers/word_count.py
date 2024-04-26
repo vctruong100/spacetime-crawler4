@@ -32,7 +32,7 @@ def word_count(tokens):
     content_size = 0
 
     for token in tokens:
-        content_size += len(token)
+        content_size += len(token.encode('utf-8'))
         word_dict[token] = word_dict.get(token, 0) + 1
     return (content_size, word_dict)
 
