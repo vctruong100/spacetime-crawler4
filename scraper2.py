@@ -40,6 +40,8 @@ def scraper(nurl, resp):
     # Process text
     cntsize, tokens, wordcnts, fingerprint = process_text(nurl, resp)
     nurl.words = wordcnts
+    nurl.smhash = fingerprint
+    nurl.size = cntsize
 
     # Check if parent nurl passes the
     # post-processing stage
@@ -58,8 +60,6 @@ def scraper(nurl, resp):
         if not filter_pre(nurl):
             continue
         
-        chld.smhash = fingerprint
-        chld.size = cntsize
         # filtered child
         # add hash to nurl.links and append to nurls
         _hash = get_urlhash(normalize(chld.url))
