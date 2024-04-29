@@ -246,10 +246,10 @@ def worker_sift_urls(w, nurl, scraped_urls):
         chld.set_parent(nurl)
 
         # Filter nurl by depths
-        if (chld.absdepth > MAX_ABSDEPTH or
-            chld.reldepth > MAX_RELDEPTH or
-            chld.monodepth > MAX_MONODEPTH or
-            chld.dupdepth > MAX_DUPDEPTH):
+        if (chld.absdepth > MAX_ABSDEPTH
+            or chld.reldepth > MAX_RELDEPTH
+            or chld.monodepth > MAX_MONODEPTH
+            or chld.dupdepth > MAX_DUPDEPTH):
             continue
 
         # Append nurl hash to parent nurl links
