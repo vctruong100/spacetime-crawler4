@@ -44,15 +44,13 @@ def scraper(nurl, resp):
     unchecked_nurls = extract_nurls(nurl, resp)
 
     # Process text
-    cntsize, tokens, wordcnts, fingerprint = process_text(nurl, resp)
+    tokens, wordcnts, fingerprint = process_text(nurl, resp)
     nurl.words = wordcnts
-
-    # Check for low-content value and if size is more than 1 MB
-    if sum(wordcnts.values()) < 200 or cntsize > 1e6:
-        return (E_TEXT_LOWINFO, None)
-
     nurl.smhash = fingerprint
-    nurl.size = cntsize
+
+    # Check for low-content value (i.e. fewer than 200 words)
+    if sum(wordcnts.values()) < 200:
+        return (E_TEXT_LOWINFO, None)
 
     # Check if parent nurl passes the
     # post-processing stage
@@ -107,8 +105,8 @@ def process_text(nurl, resp):
     """Processes the text content of the nurl by first extracting it.
     This tokenizes the text, counts the tokens, and the total grapheme count.
 
-    Returns a tuple consisting of its content_size, its tokens,
-    and its word frequency mapping.
+    Returns a tuple consisting of its tokens, its word frequency mapping, and
+    the computed fingerprint using the simhash algorithm.
     """
     # get cached / newly parsed response
     parsed_resp = parse_response(nurl, resp)
@@ -116,14 +114,14 @@ def process_text(nurl, resp):
     # get tokens
     tokens = to_tokens(parsed_resp.text_content)
 
-    # compute content size and word frequency dict
-    content_size, wordcnts = word_count(tokens)
+    # compute word frequency dict
+    wordcnts = word_count(tokens)
 
     # compute simhash
-    fingerprint = simhash(wordcnts);
+    fingerprint = simhash(wordcnts)
 
-    # returns content size, tokens, wordcnts, fingerprint
-    return (content_size, tokens, wordcnts, fingerprint)
+    # returns tokens, wordcnts, fingerprint
+    return (tokens, wordcnts, fingerprint)
 
 
 def is_valid(url):
