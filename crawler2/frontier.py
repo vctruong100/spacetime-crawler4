@@ -5,6 +5,8 @@
 # interface uses Nurls (node URLS) instead of urls (strings)
 
 from crawler2.polmut import PoliteMutex
+from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 from crawler2.nap import Nap
 from crawler2.nurl import Nurl
 from collections import deque
@@ -140,7 +142,28 @@ class Frontier(object):
                     self.nap[nurl.url] = nurl
                     return nurl
 
-
+    def get_domain_info(self, url):
+        """Gets the domain information for the URL. If the domain
+        is not in the cache, it adds the domain to the cache. The domain
+        information includes the PoliteMutex and RobotFileParser objects.
+        
+        :param url str: The URL
+        :return: The domain information
+        :rtype: dict
+        """
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        if base_url not in self.domains:
+            self.domains[base_url] = {
+                'polmut': PoliteMutex(self.config.time_delay),
+                'rparser': RobotFileParser()
+            }
+            self.domains[base_url]['rparser'].set_url(f"{base_url}/robots.txt")
+            self.domains[base_url]['rparser'].read()
+        
+        return self.domains[base_url]
+    
+    
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
         Stops the crawler from re-downloading the URL.

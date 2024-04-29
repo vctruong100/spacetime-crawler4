@@ -296,7 +296,7 @@ class Worker(Thread):
 
             # Pipe: scrape/extract valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp)
-            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
+            sifted_nurls = worker_sift_urls(w, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
