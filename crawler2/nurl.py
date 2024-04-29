@@ -86,6 +86,9 @@ class Nurl:
 
     links       Links extracted from this URL (stored as hashes)
 
+    metastr     Meta string; this is used to mark nurls with some textual flag.
+                Crawler behavior should NOT rely on the value of metastr.
+
     """
     def __init__(self, url):
         """Initializes a Nurl object from the URL.
@@ -99,6 +102,7 @@ class Nurl:
         self.parent = None
         self.exhash = None
         self.smhash = None
+        self.metastr = ""
 
         # pre-processed
         self.absdepth = 0
@@ -128,6 +132,7 @@ class Nurl:
         nurl.parent = dic["parent"]
         nurl.exhash = dic["exhash"]
         nurl.smhash = dic["smhash"]
+        nurl.metastr = dic["metastr"]
 
         # pre-processed
         nurl.absdepth = dic["absdepth"]
