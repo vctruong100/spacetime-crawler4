@@ -145,5 +145,6 @@ class Worker(Thread):
                 self.frontier.mark_nurl_complete(tbd_nurl)
             else:
                 # Try to resolve scraper error
-                pass
-
+                if ok == scraper.E_TEXT_LOWINFO:
+                    tbd_nurl.metastr = "!lowinfo"
+                self.frontier.mark_nurl_complete(tbd_nurl)
