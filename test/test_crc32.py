@@ -13,8 +13,8 @@ class TestCrc32(unittest.TestCase):
         str = b"123456789"
         str2 = b"123456789\x26\x39\xF4\xCB"
 
-        self.assertEquals(crc32(str), check)
-        self.assertEquals(crc32(str2), residue)
+        self.assertEqual(crc32(str), check)
+        self.assertEqual(crc32(str2), residue)
 
 
 if __name__ == "__main__":
