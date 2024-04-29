@@ -10,15 +10,22 @@ from helpers.filter import filter_pre, filter_post
 from helpers.word_count import to_tokens, word_count
 from helpers.simhash import simhash
 
-# error codes for scraper
-# these are returned as the reason if scraper fails
-# note: some are unused
-E_CLIENT = 0x404
+# status codes used for scraper
+# this indicates to the callee the result of the function
+# along with an optional error arg
+#
+# NOTE: some are unused
+
+E_OK = 0x0000
+E_BAD = 0xFFFF
+E_CLIENT = 0x8000
 E_FLTR_PRE = 0xaaff
 E_FLTR_POST = 0xffaa
 E_TEXT_EXACT = 0x8ffe
 E_TEXT_CLOSE = 0x8ffc
-E_TEXT_GNRIC = 0x8ff1
+E_TEXT_LOWINFO = 0x8ffa
+E_TEXT_GNRIC = 0x8fff
+
 
 def scraper(nurl, resp):
     """Scrapes nurls to crawl from the parent nurl.
@@ -31,8 +38,8 @@ def scraper(nurl, resp):
     """
     # Handles not found (404), forbidden (403), unauthorized (401)
     if resp.status in {401, 403, 404}:
-        return (False, E_CLIENT)
-    
+        return (E_BAD, None)
+
     # Extract nurls
     unchecked_nurls = extract_nurls(nurl, resp)
 
@@ -42,15 +49,15 @@ def scraper(nurl, resp):
 
     # Check for low-content value and if size is more than 1 MB
     if sum(wordcnts.values()) < 200 or cntsize > 1e6:
-        return (False, "Low info content")
-    
+        return (E_TEXT_LOWINFO, None)
+
     nurl.smhash = fingerprint
     nurl.size = cntsize
 
     # Check if parent nurl passes the
     # post-processing stage
     if not filter_post(nurl):
-        return (False, E_FLTR_POST)
+        return (E_FLTR_POST, None)
 
     # Nurls to be included
     nurls = []
@@ -63,14 +70,14 @@ def scraper(nurl, resp):
         chld.set_parent(nurl)
         if not filter_pre(nurl):
             continue
-        
+
         # filtered child
         # add hash to nurl.links and append to nurls
         _hash = get_urlhash(normalize(chld.url))
         nurl.links.append(_hash)
-        nurls.append(chld) 
-        
-    return (True, nurls) # parent is set and urls are valid; children are pre-filtered
+        nurls.append(chld)
+
+    return (E_OK, nurls) # parent is set and urls are valid; children are pre-filtered
 
 
 def extract_nurls(nurl, resp):
@@ -113,7 +120,7 @@ def process_text(nurl, resp):
     content_size, wordcnts = word_count(tokens)
 
     # compute simhash
-    fingerprint = simhash(wordcnts); 
+    fingerprint = simhash(wordcnts);
 
     # returns content size, tokens, wordcnts, fingerprint
     return (content_size, tokens, wordcnts, fingerprint)

@@ -70,7 +70,7 @@ class Worker(Thread):
             # Add the nurls
             # Then mark nurl as complete
             ok, err = scraper.scraper(tbd_nurl, resp)
-            if ok:
+            if ok == E_OK:
                 scraped_nurls = err
                 for scraped_nurl in scraped_nurls:
                     self.frontier.add_nurl(scraped_nurl)
