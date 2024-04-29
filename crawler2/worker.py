@@ -75,7 +75,7 @@ class Worker(Thread):
 
             # Before scraping for nurls, filter the responses first
             # Scraping is expensive so this is preferable
-            content_length = raw_resp.headers.get('Content-Length', 0)
+            content_length = len(raw_resp.content) # raw_resp.headers.get('Content-Length', 0)
 
             # Check against content length
             if content_length < 200 or content_length > 1000000:
