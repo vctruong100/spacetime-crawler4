@@ -8,9 +8,12 @@ from threading import Thread
 from inspect import getsource
 from utils.download import download
 from utils import get_logger
-from helpers.robot_parser import can_fetch, respect_delay
 import scraper2 as scraper
 import time
+
+from helpers.robot_parser import can_fetch, respect_delay
+from helpers.exhash import exhash
+
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -65,6 +68,44 @@ class Worker(Thread):
             if not resp:
                 # This shouldn't happen
                 continue
+
+            raw_resp = resp.raw_response
+            nap = self.frontier.nap
+
+            # Before scraping for nurls, filter the responses first
+            # Scraping is expensive so this is preferable
+            content_length = raw_resp.headers.get('Content-Length', 0)
+
+            # Check against content length
+            if content_length < 200 or content_length > 1000000:
+                # Filtered by low information
+                # Page content was too small or too large
+                tbd_nurl.metastr = "!lowinfo"
+                self.frontier.mark_nurl_complete(tbd_nurl)
+                continue
+
+            # Check against exact hashes
+            exact_hash = exhash(raw_resp.content, content_length)
+            tbd_nurl.exhash = exact_hash
+            with nap.emutex:
+                exact_bucket = nap.exdict.get(exact_hash, None)
+
+                # Not unique, append to bucket
+                if exact_bucket != None:
+                    # Filtered by exact hash
+                    # Mark page as duplicate
+                    # Then add the URL hash to the bucket
+                    # Mark as complete after
+                    tbd_nurl.metastr = "!exact"
+                    exact_bucket[1].append(tbd_nurl.hash)
+                    self.frontier.mark_nurl_complete(tbd_nurl)
+                    continue
+
+                # Unique, add bucket
+                else:
+                    exact_bucket = [tbd_nurl.hash, []]
+                    nap.exdict[exact_hash] = exact_bucket
+
 
             # Scrape the nurls
             # Add the nurls
