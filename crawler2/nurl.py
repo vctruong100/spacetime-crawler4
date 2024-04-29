@@ -127,7 +127,7 @@ class Nurl:
         # assign based on certain keys in dic
         # internals
         nurl.url = dic["url"]
-        nurl.hash = get_urlhash(normalize(nurl.url)
+        nurl.hash = get_urlhash(normalize(nurl.url))
         nurl.status = dic["status"]
         nurl.parent = dic["parent"]
         nurl.exhash = dic["exhash"]
