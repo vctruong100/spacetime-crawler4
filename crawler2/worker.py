@@ -84,9 +84,8 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
 
     # Get domain info from frontier if it exists
     domain_info = w.frontier.get_domain_info(url)
-    if domain_info:
-        pmut = domain_info[1]
-        rparser = domain_info[2]
+    pmut = domain_info['polmut']
+    rparser = domain_info['rparser']
 
     # Check robots.txt
     if not rparser.can_fetch(w.config.user_agent, url):
