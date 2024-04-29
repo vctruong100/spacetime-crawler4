@@ -33,8 +33,8 @@ def scraper(nurl, resp):
     pass filter_post() and children nurls must pass filter_pre() to be included.
 
     Returns a result tuple (ok, err).
-    If ok (1) is set to True, the result is in err (2).
-    Otherwise, the reason is in err (2).
+        -   ok (1) indicates the status code of the scraper
+        -   err (2) is the result returned, or reason
     """
     # Handles not found (404), forbidden (403), unauthorized (401)
     if resp.status in {401, 403, 404}:
