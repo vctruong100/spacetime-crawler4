@@ -7,10 +7,10 @@
 # pre-selected threshold values for Nurl attributes
 # feel free to change this
 # see crawler2/nurl.py for more info on attributes
-MAX_ABS_DEPTH = 16
-MAX_REL_DEPTH = 3
-MAX_MONO_DEPTH = 6
-MAX_DUP_DEPTH = 1
+MAX_ABS_DEPTH = 8
+MAX_REL_DEPTH = 1
+MAX_MONO_DEPTH = 2
+MAX_DUP_DEPTH = 0
 
 
 def filter_pre(nurl):
