@@ -6,7 +6,6 @@
 from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urldefrag
 from bs4 import BeautifulSoup
-from crawler2.nurl import Nurl
 
 PAGE_CACHE = dict()
 
@@ -29,14 +28,13 @@ class ParsedResponse:
         return len(self.links) == 0 and len(self.text_content) == 0
 
 
-def parse_response(nurl, resp):
+def parse_response(resp):
     """Parses the response if it does not exist in PAGE_CACHE and stores it.
     Otherwise, return the cached parsed data.
 
     If response is a redirect, then the redirected URL is 'scraped' with no text content.
     Always returns a ParsedResponse object.
 
-    :param nurl Nurl: The Node URL object
     :param resp Response: The response of the URL
     :return: The parsed response object
     :rtype: ParsedResponse
@@ -52,7 +50,7 @@ def parse_response(nurl, resp):
     hash = get_urlhash(normalize(nurl.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
-    
+
     links = set()
     text_content = []
 
@@ -74,11 +72,11 @@ def parse_response(nurl, resp):
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-        # base_url_parsed = Nurl(nurl.url)
+
         # Extract all hyperlinks using soup.find_all('a', href=True) 
         for link in soup.find_all('a', href=True):
             # Add the link to the set of links
-            abs_link = urljoin(nurl.url, link['href'])
+            abs_link = urljoin(resp.url, link['href'])
 
             # Defrag the url
             abs_link = urldefrag(abs_link).url
@@ -87,26 +85,13 @@ def parse_response(nurl, resp):
             abs_link = normalize(abs_link)
 
             new_nurl = Nurl(abs_link)
-
-            #links.add(link['href'])
-
-            
-            # if base_url_parsed.netloc == new_nurl.netloc:
-            #     # Check if the path of the link is not a subset of the base URL path
-            #     if not set(abs_link.path.strip('/').split('/')) & set(base_url_parsed.path.strip('/').split('/')):
             links.add(new_nurl)
-            
+
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
         for text in soup.stripped_strings:
             if text:
                 text_content.append(text)
-
-        # Check if text content is too short
-        if len(text_content) < 1000:
-            pass
-            #PAGE_CACHE[hash] = ParsedResponse(set(), [])
-            #return PAGE_CACHE[hash]
 
         # Make ParsedResponse consisting boths
         # the list of links and the joined text content
