@@ -82,45 +82,48 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     logger = w.logger
     url = nurl.url
 
-    if not use_cache:
-        # standard download
-        import requests
-        with frontier.dpolmut:
-            if pmut:
-                pmut.lock()
+    # Get domain info from frontier if it exists
+    domain_info = w.frontier.get_domain_info(url)
+    if domain_info:
+        pmut = domain_info[1]
+        rparser = domain_info[2]
+
+    # Check robots.txt
+    if not rparser.can_fetch(w.config.user_agent, url):
+        return (E_AGAIN, None) # Skip urls disallowed by robots.txt
+    
+    pmut.lock()
+    try:
+        if not use_cache:
+            # standard download
+            import requests
             resp = requests.get(url)
-            if pmut:
-                pmut.unlock()
             return (E_OK, _fake_response(resp))
-    else:
-        # from cache server
-        retries = 0
-        resp = None
-        while True:
-            # Download the URL
-            with frontier.dpolmut:
-                if pmut:
-                    pmut.lock()
+        else:
+            # from cache server
+            retries = 0
+            resp = None
+            while True:
+                # Download the URL
                 resp = download(url, config, logger)
-                if pmut:
-                    pmut.unlock()
 
-            # If response is not a server error or retries exceeded, stop trying
-            if (resp.status not in range(500, 512) or
-                retries >= len(RETRY_DELAY)):
-                break
+                # If response is not a server error or retries exceeded, stop trying
+                if (resp.status not in range(500, 512) or
+                    retries >= len(RETRY_DELAY)):
+                    break
 
-            # Wait and increment retries
-            # Worst case scenario: the thread halts indefinitely until its retries are exhausted
-            time.sleep(RETRY_DELAY[retries])
-            retries += 1
+                # Wait and increment retries
+                # Worst case scenario: the thread halts indefinitely until its retries are exhausted
+                time.sleep(RETRY_DELAY[retries])
+                retries += 1
 
-        if not resp:
-            # This should not happen
-            return (E_AGAIN, None)
+            if not resp:
+                # This should not happen
+                return (E_AGAIN, None)
 
-        return (E_OK, resp)
-
+            return (E_OK, resp)
+    finally:
+        pmut.unlock()
 
 def worker_filter_resp_pre(w, nurl, resp):
     """Filters response before it ever scrapes.
