@@ -13,6 +13,7 @@ import time
 
 from helpers.robot_parser import can_fetch, respect_delay
 from helpers.exhash import exhash
+from helpers.simhash import compare_fingerprints
 
 
 class Worker(Thread):
@@ -113,8 +114,34 @@ class Worker(Thread):
             ok, err = scraper.scraper(tbd_nurl, resp)
             if ok == scraper.E_OK:
                 scraped_nurls = err
+
+                # Resolve similar hashes
+                similar_hash = None
+                with nap.smutex:
+                    for h in nap.smdict.keys():
+                        if compare_fingerprints(tbd_nurl.smhash, h):
+                            # Filtered by similar hash
+                            similar_hash = h
+                            break
+
+                if similar_hash != None:
+                    # Too similar
+                    tbd_nurl.metastr = "!similar"
+                    with nap.smutex:
+                        similar_bucket = nap.smdict.get(similar_hash)
+                        similar_bucket[1].append(tbd_nurl.hash)
+                        self.frontier.mark_nurl_complete(tbd_nurl)
+                        continue # do not scrape further
+                else:
+                    # Unique enough
+                    similar_bucket = [tbd_nurl.hash, []]
+                    with nap.smutex:
+                        nap.smdict[tbd_nurl.smhash] = similar_bucket
+
+                # Add scraped nurls to frontier
                 for scraped_nurl in scraped_nurls:
                     self.frontier.add_nurl(scraped_nurl)
+
                 self.frontier.mark_nurl_complete(tbd_nurl)
             else:
                 # Try to resolve scraper error
