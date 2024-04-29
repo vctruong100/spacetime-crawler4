@@ -1,4 +1,4 @@
-import hashlib
+from helpers.crc64 import crc64
 
 THRESHOLD = 5
 
@@ -9,12 +9,12 @@ def simhash(wordcnts):
     :return: The simhash fingerprint of the document.
     """
     # Size of the hash vector
-    hash_size = 32
+    hash_size = 32 # MAX: 64 because of crc64
     v = [0] * hash_size
 
     for word, cnt in wordcnts.items():
         # Create binary hash of the word
-        word_hash = hash(word) % (2 ** hash_size)
+        word_hash = crc64(word.encode("utf-8")) % (2 ** hash_size)
         binary_hash = format(word_hash, f'0{hash_size}b')
 
         # Update the simhash fingerprint
