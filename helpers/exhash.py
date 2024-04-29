@@ -18,10 +18,8 @@ def exhash(content, size):
     :rtype: str
     """
     crc = crc32(content)
-    exhash = bytearray(8)
-    for i in range(4):
-        exhash[i] = crc & (0xFF << (i << 3))
-    for i in range(4):
-        exhash[4 + i] = size & (0xFF << (i << 3))
+    exhash = bytearray()
+    exhash.extend(crc.to_bytes(4, "little"))
+    exhash.extend(size.to_bytes(4, "little"))
     return exhash.hex()
 
