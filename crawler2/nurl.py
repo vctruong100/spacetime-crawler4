@@ -52,6 +52,8 @@ class Nurl:
 
     url         The URL itself.
 
+    hash        The hash of the normalized URL.
+
     status      The intermediate state of the URL as an int.
                     -   0x0: un-downloaded
                     -   0x1: in-use
@@ -80,15 +82,9 @@ class Nurl:
                 the URL and the parent URL excluding queries and
                 fragments. Resets to 0 otherwise.
 
-    size        Size of text content in bytes
-
     words       Tokenized word counts from the text content
 
     links       Links extracted from this URL (stored as hashes)
-
-    exlinks     Exact links based on the exact hash
-
-    smlinks     Similar links based on the similar hash
 
     """
     def __init__(self, url):
@@ -98,6 +94,7 @@ class Nurl:
         """
         # internals
         self.url = url
+        self.hash = get_urlhash(normalize(url))
         self.status = 0x0
         self.parent = None
         self.exhash = None
@@ -110,11 +107,8 @@ class Nurl:
         self.dupdepth = 0
 
         # post-processed
-        self.size = 0
         self.words = dict()
         self.links = []
-        self.exlinks = []
-        self.smlinks = []
 
 
     @classmethod
@@ -129,6 +123,7 @@ class Nurl:
         # assign based on certain keys in dic
         # internals
         nurl.url = dic["url"]
+        nurl.hash = get_urlhash(normalize(nurl.url)
         nurl.status = dic["status"]
         nurl.parent = dic["parent"]
         nurl.exhash = dic["exhash"]
@@ -141,11 +136,8 @@ class Nurl:
         nurl.dupdepth = dic["dupdepth"]
 
         # post-processed
-        nurl.size = dic["size"]
         nurl.words = dic["words"]
         nurl.links = dic["links"]
-        nurl.exlinks = dic["exlinks"]
-        nurl.smlinks = dic["smlinks"]
 
         return nurl
 
