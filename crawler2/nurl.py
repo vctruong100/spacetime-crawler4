@@ -9,6 +9,21 @@ from utils import get_urlhash, normalize
 from urllib.parse import urlparse
 
 
+# constants for nurl.status
+NURL_STATUS_NO_DOWN = 0x0
+NURL_STATUS_IN_USE = 0x1
+NURL_STATUS_IS_DOWN = 0x2
+
+
+# constants for nurl.finish
+NURL_FINISH_OK = 0x0
+NURL_FINISH_BAD = 0x1
+NURL_FINISH_LOWINFO_PRE = 0x2
+NURL_FINISH_LOWINFO_POST = 0x3
+NURL_FINISH_TOO_EXACT = 0x4
+NURL_FINISH_TOO_SIMILAR = 0x5
+
+
 def _compute_rel_dirdepth(child, parent):
     """Checks if the child URL is below the parent URL.
     Return the depth of the child relative from the parent (or -1 otherwise).
@@ -54,17 +69,21 @@ class Nurl:
 
     hash        The hash of the normalized URL.
 
+    parent      The hash of the parent URL (where the URL was found).
+
     status      The intermediate state of the URL as an int.
                     -   0x0: un-downloaded
                     -   0x1: in-use
                     -   0x2: downloaded
 
-    parent      The hash of the parent URL (where the URL was found).
-
-    exhash      Exact hash of the text content.
-
-    smhash      Similarity hash for comparing against webpages.
-                Also known as a fingerprint.
+    finish      An internal marker that indicates the finish state of the URL
+                after it was downloaded as an int.
+                    -   0x0: ok
+                    -   0x1: bad (i.e. no response)
+                    -   0x2: low-info-pre
+                    -   0x3: low-info-post
+                    -   0x4: too-exact
+                    -   0x5: too-similar
 
     absdepth    The absolute depth (relative to seed URL).
 
@@ -86,8 +105,10 @@ class Nurl:
 
     links       Links extracted from this URL (stored as hashes)
 
-    metastr     Meta string; this is used to mark nurls with some textual flag.
-                Crawler behavior should NOT rely on the value of metastr.
+    exhash      Exact hash of the text content.
+
+    smhash      Similarity hash for comparing against webpages.
+                Also known as a fingerprint.
 
     """
     def __init__(self, url):
@@ -98,11 +119,9 @@ class Nurl:
         # internals
         self.url = url
         self.hash = get_urlhash(normalize(url))
-        self.status = 0x0
         self.parent = None
-        self.exhash = None
-        self.smhash = None
-        self.metastr = ""
+        self.status = 0x0
+        self.finish = 0x0
 
         # pre-processed
         self.absdepth = 0
@@ -113,6 +132,8 @@ class Nurl:
         # post-processed
         self.words = dict()
         self.links = []
+        self.exhash = None
+        self.smhash = None
 
 
     @classmethod
@@ -128,11 +149,9 @@ class Nurl:
         # internals
         nurl.url = dic["url"]
         nurl.hash = get_urlhash(normalize(nurl.url))
-        nurl.status = dic["status"]
         nurl.parent = dic["parent"]
-        nurl.exhash = dic["exhash"]
-        nurl.smhash = dic["smhash"]
-        nurl.metastr = dic["metastr"]
+        nurl.status = dic["status"]
+        nurl.finish = dic["finish"]
 
         # pre-processed
         nurl.absdepth = dic["absdepth"]
@@ -143,6 +162,8 @@ class Nurl:
         # post-processed
         nurl.words = dic["words"]
         nurl.links = dic["links"]
+        nurl.exhash = dic["exhash"]
+        nurl.smhash = dic["smhash"]
 
         return nurl
 
