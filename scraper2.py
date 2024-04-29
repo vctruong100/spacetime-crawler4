@@ -13,10 +13,10 @@ def scraper(resp):
     Returns the extracted URLs as a list.
     """
     # Extract URLs
-    urls = extract_nurls(nurl, resp)
+    urls = extract_urls(resp)
 
     # Return valid URLs
-    return [url if is_valid(url) for url in urls]
+    return [url for url in urls if is_valid(url)] 
 
 
 def extract_urls(resp):
@@ -47,7 +47,7 @@ def process_text(resp):
     Returns a tuple consisting of its tokens and its word frequency mapping.
     """
     # get cached / newly parsed response
-    parsed_resp = parse_response(nurl, resp)
+    parsed_resp = parse_response(resp)
 
     # get tokens
     tokens = to_tokens(parsed_resp.text_content)
