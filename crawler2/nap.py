@@ -83,6 +83,20 @@ class Nap:
     dict        Dictionary with actual data
     trans       Dictionary with incoming transactions (NOT IMPLEMENTED)
     mutex       Reentrant lock object on dict
+
+    exdict      Buckets of exact webpages by hash
+                Each bucket comprises of a list of 2 elements:
+                    (1) master URL
+                    (2) a list of relatedn nurls by hash
+
+    smdict      Buckets of similar webpages by hash
+                Each bucket comprises of a list of 2 elements:
+                    (1) master URL
+                    (2) a list of related nurls by hash
+
+    emutex      Reentrant lock object on exact buckets
+    smutex      Reentrant lock object on similar buckets
+
     """
     def __init__(self, fname, autosave_interval=5, autosave_threshold=200):
         self.closed = False
@@ -94,15 +108,52 @@ class Nap:
         self.dict = None
         self.mutex = RLock()
 
+        self.exdict = None
+        self.emutex = RLock()
+
+        self.smdict = None
+        self.smutex = RLock()
+
         # open file if it exists
         if os.path.exists(fname):
             with open(fname, "rb") as fh:
+                # read dict
                 size = int.from_bytes(fh.read(4), "little")
                 self.dict = msgpack.unpackb(fh.read(size), raw=False)
+
+                # if stream is at EOF, skip reading
+                _eof = fh.read(4)
+                if _eof == b"":
+                    self.logger.info("nap ver1")
+
+                # read other versions
+                else:
+                    _verstr = _eof
+                    if _verstr == b"ver2":
+                        # version 2
+                        # extends Nap with similar buckets and exact buckets
+                        self.logger.info("nap ver2")
+
+                        # read exact buckets
+                        ex_size = int.from_bytes(fh.read(4), "little")
+                        self.exdict = msgpack.unpackb(fh.read(ex_size), raw=False)
+
+                        # read similar buckets
+                        sm_size = int.from_bytes(fh.read(4), "little")
+                        self.smdict = msgpack.unpackb(fh.read(sm_size), raw=False)
+
+                    else:
+                        self.logger.info("nap illegal ver, assume ver1")
 
         # if dict is invalid, create empty dict
         if not self.dict or not isinstance(self.dict, dict):
             self.dict = dict()
+
+        if not self.exdict or not isinstance(self.exdict, dict):
+            self.exdict = dict()
+
+        if not self.smdict or not isinstance(self.smdict, dict):
+            self.smdict = dict()
 
         # log init message
         self.logger.info(
@@ -217,9 +268,24 @@ class Nap:
 
             # write to tmp file
             with open(f"{self.fname}.tmp", "wb") as fh:
+                # write dict
                 packed = msgpack.packb(self.dict, use_bin_type=True)
                 fh.write(len(packed).to_bytes(4, "little"))
                 fh.write(packed)
+
+                # write verstr (ver2+)
+                fh.write(b"ver2")
+
+                # write exdict (ver2)
+                packed_ex = msgpack.packb(self.exdict, use_bin_type=True)
+                fh.write(len(packed_ex).to_bytes(4, "little"))
+                fh.write(packed_ex)
+
+                # write smdict (ver2)
+                packed_sm = msgpack.packb(self.smdict, use_bin_type=True)
+                fh.write(len(packed_sm).to_bytes(4, "little"))
+                fh.write(packed_sm)
+
                 self.writecnt = 0
                 write_ok = True
 
