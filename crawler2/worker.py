@@ -149,7 +149,7 @@ def worker_filter_resp_pre(w, nurl, resp):
 
     # Content is either too small or too large
     # Mark as low-info response
-    if raw_content_len < MIN_CONTENT_SIZE or raw_content_len > MAX_CONTENT_SIZE:
+    if raw_content_len < MIN_CONTENT_LEN or raw_content_len > MAX_CONTENT_LEN:
         nurl.finish = NURL_FINISH_LOWINFO_PRE
         return False
 
@@ -281,7 +281,7 @@ class Worker(Thread):
                 continue
 
             # Pipe: filter response
-            if not worker_filter_resp(self, nurl, resp):
+            if not worker_filter_resp_pre(self, nurl, resp):
                 self.frontier.mark_nurl_complete(nurl)
                 continue
 
@@ -293,7 +293,7 @@ class Worker(Thread):
 
             # Pipe: scrape/extract valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp)
-            sifted_nurls = worker_sift_urls(w, nurl, scraped_urls)
+            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
