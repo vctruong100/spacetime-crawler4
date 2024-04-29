@@ -23,7 +23,7 @@ for ((i = 0; i<=$2; i++)); do
 	ap="absdepth\t$i\$"
 	rp="reldepth\t$i\$"
 	mp="monodepth\t$i\$"
-	dp="dupdepth\t$1\$"
+	dp="dupdepth\t$i\$"
 
 	# grep output
 	a=$(echo "$pipe" | grep -Pc $ap)
