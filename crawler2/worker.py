@@ -255,6 +255,9 @@ def worker_sift_urls(w, nurl, scraped_urls):
         # Append nurl hash to parent nurl links
         nurl.links.append(chld.hash)
 
+        # Append to sifted nurls
+        sifted_nurls.append(chld)
+
     return sifted_nurls
 
 
