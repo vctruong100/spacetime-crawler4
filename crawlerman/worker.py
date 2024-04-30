@@ -6,29 +6,29 @@ from threading import Thread
 from crawler2.worker import *
 
 
-def flush_nurl(nurl):
-    print("=" * 20)
+def flush_nurl(nurl,file):
+    print("=" * 20,file=file)
     for k,v in nurl.__dict__.items():
         if k=="words":
-            print(f"{k}\n")
+            print(f"{k}\n",file=file)
             if v:
                 for w,c in v.items():
                    try:
-                        print(w,c)
+                        print(w,c,file=file)
                    except Exception:
-                        print("<encoding error>", w.encode("utf-8"), c)
+                        print("<encoding error>", w.encode("utf-8"), c, file=file)
             else:
-                print("<None>")
+                print("<None>",file=file)
         elif k == "links":
-            print(f"{k}\n")
+            print(f"{k}\n",file=file)
             if v:
                 for l in v:
-                    print(l)
+                    print(l,file=file)
             else:
-                print("<None>")
+                print("<None>",file=file)
         else:
-            print(f"{k}\t{v}")
-    print("=" * 20, flush=True)
+            print(f"{k}\t{v}",file=file)
+    print("=" * 20, flush=True,file=file)
 
 
 class Worker(Thread):
@@ -37,6 +37,9 @@ class Worker(Thread):
         self.config = config
         self.frontier = frontier
         #_assert_no_requests()
+
+        self.file = open("manf.log", "w")
+
         super().__init__(daemon=True)
 
 
@@ -59,7 +62,7 @@ class Worker(Thread):
             if ok == E_BAD:
                 print("get_domain_info: not allowed by robots.txt")
                 self.frontier.mark_nurl_complete(nurl)
-                flush_nurl(nurl)
+                flush_nurl(nurl,self.file)
                 continue
 
 
@@ -68,18 +71,18 @@ class Worker(Thread):
             if ok == E_AGAIN:
                 print("get_resp: redo URL later")
                 self.frontier.add_nurl(nurl)
-                flush_nurl(nurl)
+                flush_nurl(nurl,self.file)
                 continue
             if ok != E_OK:
                 print("get_resp: skipped URL")
-                flush_nurl(nurl)
+                flush_nurl(nurl,self.file)
                 continue
 
             # Pipe: filter response
             if not worker_filter_resp_pre(self, nurl, resp):
                 print("filter_resp_pre: filtered", nurl.finish)
                 self.frontier.mark_nurl_complete(nurl)
-                flush_nurl(nurl)
+                flush_nurl(nurl,self.file)
                 continue
 
             # Pipe: process text content
@@ -87,7 +90,7 @@ class Worker(Thread):
             if not worker_filter_resp_post_text(self, nurl, words):
                 print("filter_resp_post_text: filtered", nurl.finish)
                 self.frontier.mark_nurl_complete(nurl)
-                flush_nurl(nurl)
+                flush_nurl(nurl,self.file)
                 continue
 
             # Pipe: scrape/extract valid URLs and transform to nurls
@@ -101,5 +104,5 @@ class Worker(Thread):
             self.frontier.mark_nurl_complete(nurl)
 
             print("URL processed successfully")
-            flush_nurl(nurl)
+            flush_nurl(nurl,self.file)
 
