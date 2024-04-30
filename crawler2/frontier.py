@@ -169,7 +169,7 @@ class Frontier(object):
                     if crawl_delay is None:
                         crawl_delay = self.config.time_delay
 
-                    domain_polmut = crawl_delay
+                    domain_polmut = PoliteMutex(crawl_delay)
 
                 self.domains[base_url] = {
                     'polmut': domain_polmut,
