@@ -81,6 +81,7 @@ def worker_get_domain_info(w, nurl):
 
     # Check robots.txt
     if not rparser.can_fetch(w.config.user_agent, nurl.url):
+        nurl.finish = NURL_FINISH_NOT_ALLOWED
         return (E_BAD, None) # Skip urls disallowed by robots.txt
 
     return (E_OK, pmut)
