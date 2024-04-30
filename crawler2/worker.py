@@ -23,7 +23,7 @@ from crawler2.nurl import *
 E_OK = 0x00
 E_EMPTY = 0x01
 E_AGAIN = 0x02
-
+E_BAD = 0x03
 
 # Downloads are retried up until all delays are exhausted.
 # Each element corresponds to how long the thread should sleep
@@ -77,9 +77,9 @@ def worker_get_domain_info(w, nurl):
 
     # Check robots.txt
     if not rparser.can_fetch(w.config.user_agent, nurl.url):
-        return (E_AGAIN, None) # Skip urls disallowed by robots.txt
+        return (E_BAD, None) # Skip urls disallowed by robots.txt
 
-    return pmut
+    return (E_OK, pmut)
 
 def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     """Fetches the response of the nurl from the cache server.
@@ -295,7 +295,11 @@ class Worker(Thread):
             # Fetch next nurl / URL
             nurl = self.frontier.get_tbd_nurl()
 
-            pmut = worker_get_domain_info(self, nurl)
+            # Pipe: get domain info
+            ok, pmut = worker_get_domain_info(self, nurl)
+            if ok == E_BAD:
+                self.frontier.mark_nurl_complete(nurl)
+                continue
 
             # Pipe: get response
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=False)
