@@ -61,6 +61,15 @@ def _fake_response(resp):
     return resp2
 
 def worker_get_domain_info(w, nurl):
+    """Gets domain info from the frontier.
+    It then checks the robots.txt file for the URL.
+    Returns the PoliteMutex
+
+    :param w Worker: The worker thread
+    :param nurl Nurl: The Nurl object
+    :return: PoliteMutex for the domain
+    :rtype: PoliteMutex"""
+
     # Get domain info from frontier if it exists
     domain_info = w.frontier.get_domain_info(nurl.url)
     pmut = domain_info['polmut']
@@ -70,9 +79,7 @@ def worker_get_domain_info(w, nurl):
     if not rparser.can_fetch(w.config.user_agent, nurl.url):
         return (E_AGAIN, None) # Skip urls disallowed by robots.txt
 
-    return (pmut, rparser)
-
-
+    return pmut
 
 def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     """Fetches the response of the nurl from the cache server.
@@ -288,7 +295,7 @@ class Worker(Thread):
             # Fetch next nurl / URL
             nurl = self.frontier.get_tbd_nurl()
 
-            pmut, rparser = worker_get_domain_info(self, nurl)
+            pmut = worker_get_domain_info(self, nurl)
 
             # Pipe: get response
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=False)
