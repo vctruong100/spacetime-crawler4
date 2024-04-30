@@ -5,6 +5,8 @@
 # interface uses Nurls (node URLS) instead of urls (strings)
 
 from crawler2.polmut import PoliteMutex
+from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 from crawler2.nap import Nap
 from crawler2.nurl import Nurl
 from collections import deque
@@ -39,15 +41,17 @@ class Frontier(object):
     dpolmut     PoliteMutex object on downloading any URLs
 
     """
-    def __init__(self, config, restart, policy=("dfs",0)):
+    def __init__(self, config, restart, use_cache, policy=("dfs",0)):
         """Initializes the frontier.
 
         :param config: Config object
         :param restart: Whether crawler should restart
+        :param use_cache: Whether crawler should use the cache server
         :param policy: The traversal policy
         """
         self.logger = get_logger("frontier2")
         self.config = config
+        self.use_cache = use_cache
         self.policy = policy
 
         self.nurls = deque()
@@ -57,11 +61,10 @@ class Frontier(object):
         self.dpolmut = PoliteMutex(self.config.time_delay)
 
         self._handle_restart(restart)
-        #self._process_robocache()
         self._nap_init()
 
 
-    def add_nurl(self, nurl, fingerprint):
+    def add_nurl(self, nurl):
         """Adds nurl to the nurls deque.
         If nurl was already downloaded, nurl is ignored.
         If nurl is not in the nap, add to the nap.
@@ -72,7 +75,7 @@ class Frontier(object):
         if nurl.status == 0x2:
             return
 
-	# Add nurl to nap iff it doesn't exist
+	    # Add nurl to nap iff it doesn't exist
         with self.nap.mutex:
             if not self.nap.exists(nurl.url):
                 self.nap[nurl.url] = nurl
@@ -80,7 +83,8 @@ class Frontier(object):
         # Append nurl to deque
         with self.nurlmut:
             self.nurls.append(nurl)
-    
+
+
     def get_tbd_nurl(self):
         """Gets the next un-downloaded nurl not in-use to download
         based on the frontier's traversal policy.
@@ -140,6 +144,39 @@ class Frontier(object):
                     self.nap[nurl.url] = nurl
                     return nurl
 
+    def get_domain_info(self, url):
+        """Gets the domain information for the URL. If the domain
+        is not in the cache, it adds the domain to the cache. The domain
+        information includes the PoliteMutex and RobotFileParser objects.
+
+        :param url str: The URL
+        :return: The domain information
+        :rtype: dict
+        """
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+        with self.domainmut: # lock domain cache
+            if base_url not in self.domains:
+
+                # lock the PoliteMutex for the domain
+                with self.dpolmut:
+                    rparser = RobotFileParser()
+                    rparser.set_url(f"{base_url}/robots.txt")
+                    rparser.read()
+                    crawl_delay = rparser.crawl_delay(self.config.user_agent)
+
+                    if crawl_delay is None:
+                        crawl_delay = self.config.time_delay
+
+                    domain_polmut = PoliteMutex(crawl_delay)
+
+                self.domains[base_url] = {
+                    'polmut': domain_polmut,
+                    'rparser': rparser
+                }
+        return self.domains[base_url]
+
 
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
@@ -172,10 +209,6 @@ class Frontier(object):
                 f"Found save file {self.config.save_file}, deleting it.")
             os.remove(self.config.save_file)
 
-        # Silently remove the .robocache file
-        if restart and os.path.exists(_robocache_file):
-            os.remove(_robocache_file)
-
 
     def _nap_init(self):
         """Initializes the Nap object.
@@ -193,7 +226,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[url] = nurl
-		# not yet downloaded
+        		# not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
@@ -205,7 +238,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[nurl.url] = nurl
-		# not yet downloaded
+		        # not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 

@@ -79,23 +79,18 @@ class Nap:
     writecnt    Write count since last save
     autosave    Auto-save thread (defaults: 5 seconds, 200 min writes)
     logger      Logger object
-
     dict        Dictionary with actual data
-    trans       Dictionary with incoming transactions (NOT IMPLEMENTED)
-    mutex       Reentrant lock object on dict
+    mutex       Reentrant lock object on Nap object
 
     exdict      Buckets of exact webpages by hash
                 Each bucket comprises of a list of 2 elements:
                     (1) master URL
-                    (2) a list of relatedn nurls by hash
+                    (2) a list of related nurls by hash
 
     smdict      Buckets of similar webpages by hash
                 Each bucket comprises of a list of 2 elements:
                     (1) master URL
                     (2) a list of related nurls by hash
-
-    emutex      Reentrant lock object on exact buckets
-    smutex      Reentrant lock object on similar buckets
 
     """
     def __init__(self, fname, autosave_interval=5, autosave_threshold=200):
@@ -106,13 +101,10 @@ class Nap:
         self.logger = get_logger("nap")
 
         self.dict = None
-        self.mutex = RLock()
-
         self.exdict = None
-        self.emutex = RLock()
-
         self.smdict = None
-        self.smutex = RLock()
+
+        self.mutex = RLock()
 
         # open file if it exists
         if os.path.exists(fname):
