@@ -158,14 +158,24 @@ class Frontier(object):
 
         with self.domainmut: # lock domain cache
             if base_url not in self.domains:
-                self.domains[base_url] = {
-                    'polmut': PoliteMutex(self.config.time_delay),
-                    'rparser': RobotFileParser()
-                }
-                self.domains[base_url]['rparser'].set_url(f"{base_url}/robots.txt")
-                self.domains[base_url]['rparser'].read()
 
-            return self.domains[base_url]
+                # lock the PoliteMutex for the domain
+                with self.dpolmut:
+                    rparser = RobotFileParser()
+                    rparser.set_url(f"{base_url}/robots.txt")
+                    rparser.read()
+                    crawl_delay = rparser.crawl_delay(self.config.user_agent)
+
+                    if crawl_delay is None:
+                        crawl_delay = self.config.time_delay
+
+                    domain_polmut = crawl_delay
+
+                self.domains[base_url] = {
+                    'polmut': domain_polmut,
+                    'rparser': rparser
+                }
+        return self.domains[base_url]
 
 
     def mark_nurl_complete(self, nurl):
