@@ -60,6 +60,19 @@ def _fake_response(resp):
     resp2.error = ""
     return resp2
 
+def worker_get_domain_info(w, nurl):
+    # Get domain info from frontier if it exists
+    domain_info = w.frontier.get_domain_info(nurl.url)
+    pmut = domain_info['polmut']
+    rparser = domain_info['rparser']
+
+    # Check robots.txt
+    if not rparser.can_fetch(w.config.user_agent, nurl.url):
+        return (E_AGAIN, None) # Skip urls disallowed by robots.txt
+
+    return (pmut, rparser)
+
+
 
 def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     """Fetches the response of the nurl from the cache server.
@@ -82,16 +95,6 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     logger = w.logger
     url = nurl.url
 
-    # Get domain info from frontier if it exists
-    domain_info = w.frontier.get_domain_info(url)
-    pmut = domain_info['polmut']
-    rparser = domain_info['rparser']
-
-    # Check robots.txt
-    if not rparser.can_fetch(w.config.user_agent, url):
-        return (E_AGAIN, None) # Skip urls disallowed by robots.txt
-
-    
     if not use_cache:
         # standard download
         import requests
@@ -285,8 +288,10 @@ class Worker(Thread):
             # Fetch next nurl / URL
             nurl = self.frontier.get_tbd_nurl()
 
+            pmut, rparser = worker_get_domain_info(self, nurl)
+
             # Pipe: get response
-            ok, resp = worker_get_resp(self, nurl, pmut=None, use_cache=False)
+            ok, resp = worker_get_resp(self, nurl, pmut, use_cache=False)
             if ok == E_AGAIN:
                 self.frontier.add_nurl(nurl)
                 continue
