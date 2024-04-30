@@ -59,11 +59,10 @@ class Frontier(object):
         self.dpolmut = PoliteMutex(self.config.time_delay)
 
         self._handle_restart(restart)
-        #self._process_robocache()
         self._nap_init()
 
 
-    def add_nurl(self, nurl, fingerprint):
+    def add_nurl(self, nurl):
         """Adds nurl to the nurls deque.
         If nurl was already downloaded, nurl is ignored.
         If nurl is not in the nap, add to the nap.
@@ -74,7 +73,7 @@ class Frontier(object):
         if nurl.status == 0x2:
             return
 
-	# Add nurl to nap iff it doesn't exist
+	    # Add nurl to nap iff it doesn't exist
         with self.nap.mutex:
             if not self.nap.exists(nurl.url):
                 self.nap[nurl.url] = nurl
@@ -82,7 +81,8 @@ class Frontier(object):
         # Append nurl to deque
         with self.nurlmut:
             self.nurls.append(nurl)
-    
+
+
     def get_tbd_nurl(self):
         """Gets the next un-downloaded nurl not in-use to download
         based on the frontier's traversal policy.
@@ -146,7 +146,7 @@ class Frontier(object):
         """Gets the domain information for the URL. If the domain
         is not in the cache, it adds the domain to the cache. The domain
         information includes the PoliteMutex and RobotFileParser objects.
-        
+
         :param url str: The URL
         :return: The domain information
         :rtype: dict
@@ -162,10 +162,10 @@ class Frontier(object):
                 }
                 self.domains[base_url]['rparser'].set_url(f"{base_url}/robots.txt")
                 self.domains[base_url]['rparser'].read()
-            
+
             return self.domains[base_url]
-        
-    
+
+
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
         Stops the crawler from re-downloading the URL.
@@ -197,10 +197,6 @@ class Frontier(object):
                 f"Found save file {self.config.save_file}, deleting it.")
             os.remove(self.config.save_file)
 
-        # Silently remove the .robocache file
-        if restart and os.path.exists(_robocache_file):
-            os.remove(_robocache_file)
-
 
     def _nap_init(self):
         """Initializes the Nap object.
@@ -218,7 +214,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[url] = nurl
-		# not yet downloaded
+        		# not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
@@ -230,7 +226,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[nurl.url] = nurl
-		# not yet downloaded
+		        # not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
