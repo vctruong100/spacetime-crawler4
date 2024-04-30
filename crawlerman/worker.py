@@ -8,11 +8,11 @@ from crawler2.worker import *
 
 def flush_nurl(nurl):
     print("=" * 20)
-    for k,v in v.__dict__.items():
+    for k,v in nurl.__dict__.items():
         if k=="words":
-            print(f"{k2}\n")
+            print(f"{k}\n")
             if v:
-                for w,c in v2.items():
+                for w,c in v.items():
                    try:
                         print(w,c)
                    except Exception:
@@ -20,7 +20,7 @@ def flush_nurl(nurl):
             else:
                 print("<None>")
         elif k == "links":
-            print(f"{k2}\n")
+            print(f"{k}\n")
             if v:
                 for l in v:
                     print(l)
@@ -84,7 +84,7 @@ class Worker(Thread):
 
             # Pipe: process text content
             tokens, words = scraper.process_text(resp)
-            if not worker_filter_resp_post_text(self, nurl, resp):
+            if not worker_filter_resp_post_text(self, nurl, words):
                 print("filter_resp_post_text: filtered", nurl.finish)
                 self.frontier.mark_nurl_complete(nurl)
                 flush_nurl(nurl)
@@ -92,7 +92,7 @@ class Worker(Thread):
 
             # Pipe: scrape/extract valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp, strict=False)
-            sifted_nurls = worker_sift_urls(w, nurl, scraped_urls)
+            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
