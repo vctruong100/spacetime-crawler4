@@ -54,7 +54,7 @@ def _assert_no_requests():
 def _fake_response(resp):
     """Creates a blanket Response object from utils.response.Response
     """
-    resp2 = Response.__new__()
+    resp2 = Response.__new__(Response)
     resp2.url = resp.url
     resp2.status = resp.status_code
     resp2.raw_response = resp
