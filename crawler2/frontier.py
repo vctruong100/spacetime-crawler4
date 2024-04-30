@@ -153,16 +153,18 @@ class Frontier(object):
         """
         parsed_url = urlparse(url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        if base_url not in self.domains:
-            self.domains[base_url] = {
-                'polmut': PoliteMutex(self.config.time_delay),
-                'rparser': RobotFileParser()
-            }
-            self.domains[base_url]['rparser'].set_url(f"{base_url}/robots.txt")
-            self.domains[base_url]['rparser'].read()
+
+        with self.domainmut: # lock domain cache
+            if base_url not in self.domains:
+                self.domains[base_url] = {
+                    'polmut': PoliteMutex(self.config.time_delay),
+                    'rparser': RobotFileParser()
+                }
+                self.domains[base_url]['rparser'].set_url(f"{base_url}/robots.txt")
+                self.domains[base_url]['rparser'].read()
+            
+            return self.domains[base_url]
         
-        return self.domains[base_url]
-    
     
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
