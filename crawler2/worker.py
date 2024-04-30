@@ -170,6 +170,35 @@ def worker_filter_resp_pre(w, nurl, resp):
         return False
 
     raw_resp = resp.raw_response
+
+    # Filter response by redirects
+    # If it's a redirect, add the new redirected nurl
+    # The redirected nurl shall inherit the nurl's attributes
+    if raw_resp.is_redirect:
+        url = raw_resp.headers.get("Location", None)
+
+        # If redirect URL exists
+        if url:
+            # Inherit nurl attributes except URL, hash, status, finish
+            redirect_nurl = Nurl(url)
+            for k, v in nurl.__dict__.items():
+                if (k == "url"
+                    or k == "hash"
+                    or k == "status"
+                    or k == "finish"):
+                    continue
+                redirect_nurl.__dict__[k] = v
+
+            # Add redirected nurl to frontier to process later
+            frontier.add_nurl(redirect_nurl)
+
+            # Append the redirected nurl to current nurl's links
+            nurl.links.append(redirect_nurl.hash)
+
+        # Mark as a redirect nurl
+        nurl.finish = NURL_FINISH_REDIRECT
+        return False
+
     raw_content = raw_resp.content
     raw_content_len = len(raw_resp.content)
 

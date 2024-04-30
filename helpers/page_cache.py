@@ -56,17 +56,6 @@ def parse_response(resp):
 
     # Cached data does not exist, so try parsing resp
 
-    # Check if response is a redirect
-    if resp.raw_response.is_redirect:
-        # Add redirected link to set of links
-
-        new_link = resp.raw_response.headers["Location"]
-        links.add(new_link)
-
-        # No text content because it's a redirect
-        PAGE_CACHE[hash] = ParsedResponse(links, text_content)
-        return PAGE_CACHE[hash]
-
     # Check if response is successful
     if resp.status == 200 and hasattr(resp.raw_response, 'content'):
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
