@@ -42,12 +42,12 @@ def parse_response(resp):
 
     # Check for cache server errors
     if resp.status in range(600, 606+1) or resp.raw_response is None:
-        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {nurl.url}")
+        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {resp.url}")
         return ParsedResponse(set(), [])
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
-    hash = get_urlhash(normalize(nurl.url))
+    hash = get_urlhash(normalize(resp.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
 
@@ -60,9 +60,7 @@ def parse_response(resp):
     if resp.raw_response.is_redirect:
         # Add redirected link to set of links
 
-        # Create a new Nurl object with the redirected URL
-        # and set the parent to the original Nurl object
-        new_link = Nurl(resp.raw_response.headers["Location"])
+        new_link = resp.raw_response.headers["Location"]
         links.add(new_link)
 
         # No text content because it's a redirect
@@ -84,8 +82,7 @@ def parse_response(resp):
             # Normalize the url
             abs_link = normalize(abs_link)
 
-            new_nurl = Nurl(abs_link)
-            links.add(new_nurl)
+            links.add(abs_link)
 
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
