@@ -22,4 +22,4 @@ if __name__ == "__main__":
     parser.add_argument("--config_file", type=str, default="config.ini")
     parser.add_argument("--use_cache", default=False)
     args = parser.parse_args()
-    main(args.config_file, args.restart, use_cache)
+    main(args.config_file, args.restart, args.use_cache)

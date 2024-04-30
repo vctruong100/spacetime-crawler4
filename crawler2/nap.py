@@ -101,6 +101,9 @@ class Nap:
         self.logger = get_logger("nap")
 
         self.dict = None
+        self.exdict = None
+        self.smdict = None
+
         self.mutex = RLock()
 
         # open file if it exists

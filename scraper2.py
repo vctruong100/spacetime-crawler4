@@ -8,7 +8,7 @@ from helpers.page_cache import parse_response
 from helpers.word_count import to_tokens, word_count
 
 
-def scraper(resp):
+def scraper(resp, strict=True):
     """Scrapes valid urls to crawl from response.
     Returns the extracted URLs as a list.
     """
@@ -16,7 +16,7 @@ def scraper(resp):
     urls = extract_urls(resp)
 
     # Return valid URLs
-    return [url for url in urls if is_valid(url)]
+    return [url for url in urls if is_valid(url, strict)]
 
 
 def extract_urls(resp):
@@ -58,7 +58,7 @@ def process_text(resp):
     return (tokens, wordcnts)
 
 
-def is_valid(url):
+def is_valid(url, strict=True):
     """Decide whether to crawl this url or not.
     This function is forked from scraper.py with no
     additional changes (aside from prior modifications).
@@ -68,15 +68,18 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        # Extract network location part of the URL
-        netlocation = parsed.netloc
+        # Strict mode
+        # Only consider URLs that meet the requirements spec
+        if strict:
+            # Extract network location part of the URL
+            netlocation = parsed.netloc
 
-        # Check if network location ends with specified domains (in requirements)
-        if not (netlocation.endswith(".ics.uci.edu")
-            or netlocation.endswith(".cs.uci.edu")
-            or netlocation.endswith(".informatics.uci.edu")
-            or netlocation.endswith(".stat.uci.edu")):
-            return False
+            # Check if network location ends with specified domains (in requirements)
+            if not (netlocation.endswith(".ics.uci.edu")
+                or netlocation.endswith(".cs.uci.edu")
+                or netlocation.endswith(".informatics.uci.edu")
+                or netlocation.endswith(".stat.uci.edu")):
+                return False
 
         # Extract path and check if path ends with file extensions and ignore it
         path = parsed.path
