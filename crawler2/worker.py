@@ -324,13 +324,13 @@ class Worker(Thread):
 
             # Pipe: process text content
             tokens, words = scraper.process_text(resp)
-            if not worker_filter_resp_post_text(self, nurl, resp):
+            if not worker_filter_resp_post_text(self, nurl, words):
                 self.frontier.mark_nurl_complete(nurl)
                 continue
 
             # Pipe: scrape/extract valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp)
-            sifted_nurls = worker_sift_urls(w, nurl, scraped_urls)
+            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
