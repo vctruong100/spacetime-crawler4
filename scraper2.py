@@ -16,7 +16,7 @@ def scraper(resp):
     urls = extract_urls(resp)
 
     # Return valid URLs
-    return [url for url in urls if is_valid(url)] 
+    return [url for url in urls if is_valid(url)]
 
 
 def extract_urls(resp):
