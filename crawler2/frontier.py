@@ -41,15 +41,17 @@ class Frontier(object):
     dpolmut     PoliteMutex object on downloading any URLs
 
     """
-    def __init__(self, config, restart, policy=("dfs",0)):
+    def __init__(self, config, restart, use_cache, policy=("dfs",0)):
         """Initializes the frontier.
 
         :param config: Config object
         :param restart: Whether crawler should restart
+        :param use_cache: Whether crawler should use the cache server
         :param policy: The traversal policy
         """
         self.logger = get_logger("frontier2")
         self.config = config
+        self.use_cache = use_cache
         self.policy = policy
 
         self.nurls = deque()

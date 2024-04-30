@@ -9,10 +9,10 @@ from crawler2.worker import Worker
 
 
 class Crawler(object):
-    def __init__(self, config, restart, frontier_factory=Frontier, worker_factory=Worker):
+    def __init__(self, config, restart, use_cache, frontier_factory=Frontier, worker_factory=Worker):
         self.config = config
         self.logger = get_logger("crawler2")
-        self.frontier = frontier_factory(config, restart)
+        self.frontier = frontier_factory(config, restart, use_cache)
         self.workers = list()
         self.worker_factory = worker_factory
 

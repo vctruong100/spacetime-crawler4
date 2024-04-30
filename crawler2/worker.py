@@ -25,6 +25,7 @@ E_EMPTY = 0x01
 E_AGAIN = 0x02
 E_BAD = 0x03
 
+
 # Downloads are retried up until all delays are exhausted.
 # Each element corresponds to how long the thread should sleep
 # (which means how long the worker thread is stuck on this URL).
@@ -60,6 +61,7 @@ def _fake_response(resp):
     resp2.error = ""
     return resp2
 
+
 def worker_get_domain_info(w, nurl):
     """Gets domain info from the frontier.
     It then checks the robots.txt file for the URL.
@@ -80,6 +82,7 @@ def worker_get_domain_info(w, nurl):
         return (E_BAD, None) # Skip urls disallowed by robots.txt
 
     return (E_OK, pmut)
+
 
 def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     """Fetches the response of the nurl from the cache server.
@@ -302,7 +305,7 @@ class Worker(Thread):
                 continue
 
             # Pipe: get response
-            ok, resp = worker_get_resp(self, nurl, pmut, use_cache=False)
+            ok, resp = worker_get_resp(self, nurl, pmut, use_cache=self.frontier.use_cache)
             if ok == E_AGAIN:
                 self.frontier.add_nurl(nurl)
                 continue
