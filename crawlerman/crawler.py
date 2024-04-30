@@ -21,6 +21,7 @@ class Crawler(object):
 
         worker = self.worker_factory(1, self.config, self.frontier)
         worker.start()
+        worker.join()
 
         # all worker threads have finished
         # close the nap file before killing the main thread

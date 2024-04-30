@@ -52,7 +52,7 @@ class Worker(Thread):
                 print("no more URLs; killing worker")
                 break
 
-            print("fetch URL {nurl.url}")
+            print(f"fetch URL {nurl.url}")
 
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
