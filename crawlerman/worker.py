@@ -10,7 +10,7 @@ def flush_nurl(nurl,file):
     print("=" * 20,file=file)
     for k,v in nurl.__dict__.items():
         if k=="words":
-            print(f"{k}\n",file=file)
+            print(f"\n{k}\n",file=file)
             if v:
                 for w,c in v.items():
                    try:
@@ -19,13 +19,15 @@ def flush_nurl(nurl,file):
                         print("<encoding error>", w.encode("utf-8"), c, file=file)
             else:
                 print("<None>",file=file)
+            print("\n",file=file)
         elif k == "links":
-            print(f"{k}\n",file=file)
+            print(f"\n{k}\n",file=file)
             if v:
                 for l in v:
                     print(l,file=file)
             else:
                 print("<None>",file=file)
+            print("\n",file=file)
         else:
             print(f"{k}\t{v}",file=file)
     print("=" * 20, flush=True,file=file)
