@@ -36,7 +36,7 @@ class Worker(Thread):
         self.logger = get_logger(f"crawlman-worker-{worker_id}", "worker")
         self.config = config
         self.frontier = frontier
-        _assert_no_requests()
+        #_assert_no_requests()
         super().__init__(daemon=True)
 
 
