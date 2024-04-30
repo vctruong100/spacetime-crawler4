@@ -171,6 +171,13 @@ class Frontier(object):
 
                     domain_polmut = PoliteMutex(crawl_delay)
 
+                    # important!!!!
+                    # domain_polmut should be locked/unlocked immediately
+                    # this ensures the crawler abides by the host's crawl-delay
+                    # even after downloading robots.txt
+                    domain_polmut.lock()
+                    domain_polmut.unlock()
+
                 self.domains[base_url] = {
                     'polmut': domain_polmut,
                     'rparser': rparser
