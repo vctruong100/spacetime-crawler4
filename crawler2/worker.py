@@ -70,7 +70,9 @@ def worker_get_domain_info(w, nurl):
     :param w Worker: The worker thread
     :param nurl Nurl: The Nurl object
     :return: PoliteMutex for the domain
-    :rtype: PoliteMutex"""
+    :rtype: PoliteMutex
+
+    """
 
     # Get domain info from frontier if it exists
     domain_info = w.frontier.get_domain_info(nurl.url)
