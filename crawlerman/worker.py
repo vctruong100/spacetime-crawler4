@@ -62,7 +62,7 @@ class Worker(Thread):
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
             if ok == E_BAD:
-                print("get_domain_info: not allowed by robots.txt")
+                print("get_domain_info: not allowed by robots.txt", nurl.finish)
                 self.frontier.mark_nurl_complete(nurl)
                 flush_nurl(nurl,self.file)
                 continue
