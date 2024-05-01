@@ -13,6 +13,8 @@ from collections import deque
 from threading import RLock
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
+import requests
+from xml.etree import ElementTree
 import os
 
 
@@ -156,6 +158,7 @@ class Frontier(object):
         """
         parsed_url = urlparse(url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        robots_url = f"{base_url}/robots.txt"
 
         with self.domainmut: # lock domain cache
             if base_url not in self.domains:
@@ -181,10 +184,16 @@ class Frontier(object):
 
                 self.domains[base_url] = {
                     'polmut': domain_polmut,
-                    'rparser': rparser
+                    'rparser': rparser,
                 }
-        return self.domains[base_url]
 
+                sitemap_urls = rparser.site_maps()
+                for sitemap_url in sitemap_urls:
+                    sitemap_nurl = Nurl(sitemap_url)
+                    sitemap_nurl.set_parent(robots_url)
+                    self.add_nurl(sitemap_nurl)
+
+        return self.domains[base_url]
 
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
