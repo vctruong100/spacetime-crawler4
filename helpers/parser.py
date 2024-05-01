@@ -136,8 +136,8 @@ def parse_response(resp):
 
     html_soup = BeautifulSoup(raw_resp.content, 'lxml')
 
-    # Extract all hyperlinks using soup.find_all('a', href=True)
-    for link in soup.find_all('a', href=True):
+    # Extract all hyperlinks using html_soup.find_all('a', href=True)
+    for link in html_soup.find_all('a', href=True):
         # Add the link to the set of links
         abs_link = urljoin(resp.url, link['href'])
 
@@ -147,15 +147,15 @@ def parse_response(resp):
 
         links.add(abs_link)
 
-        # Extract stripped text using soup.stripped_strings
-        # Only include non-empty text in text_content
-        for text in soup.stripped_strings:
-            if text:
-                text_content.append(text)
+    # Extract stripped text using html_soup.stripped_strings
+    # Only include non-empty text in text_content
+    for text in html_soup.stripped_strings:
+        if text:
+            text_content.append(text)
 
-        # Make ParsedResponse consisting boths
-        # the list of links and the joined text content
-        PAGE_CACHE[hash] = ParsedResponse(links, text_content)
+    # Make ParsedResponse consisting boths
+    # the list of links and the joined text content
+    PAGE_CACHE[hash] = ParsedResponse(links, text_content)
 
     # Return parsed response
     return PAGE_CACHE[hash]
