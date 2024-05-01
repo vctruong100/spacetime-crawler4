@@ -156,7 +156,6 @@ class Frontier(object):
         """
         parsed_url = urlparse(url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        robots_url = f"{base_url}/robots.txt"
 
         with self.domainmut: # lock domain cache
             if base_url not in self.domains:
@@ -183,6 +182,7 @@ class Frontier(object):
                     domain_polmut.lock()
                     domain_polmut.unlock()
 
+                # add to domain info to domains
                 self.domains[base_url] = {
                     'polmut': domain_polmut,
                     'rparser': rparser,
@@ -195,6 +195,7 @@ class Frontier(object):
                     self.add_nurl(sitemap_nurl)
 
         return self.domains[base_url]
+
 
     def mark_nurl_complete(self, nurl):
         """Marks the nurl as complete.
