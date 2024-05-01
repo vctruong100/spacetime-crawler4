@@ -241,7 +241,7 @@ def worker_filter_resp_post_text(w, nurl, words):
     #
     #   -   If there are too few words,
     #       then the content isn't worth exploring.
-    if (len(word.keys()) < MIN_UNIQUE_WORDS
+    if (len(words.keys()) < MIN_UNIQUE_WORDS
         or max(words.values()) < MIN_MAX_WORD_COUNT
         or sum(words.values()) < MIN_WORDS):
         nurl.finish = NURL_FINISH_LOWINFO_POST
@@ -252,7 +252,6 @@ def worker_filter_resp_post_text(w, nurl, words):
     nurl.smhash = raw_hash
 
     with nap.mutex:
-        sim_found = False
         for key, similar_bucket in nap.smdict.items():
             if compare_fingerprints(raw_hash, key):
                 # An intermediate state of a bucket might exist
@@ -369,7 +368,7 @@ class Worker(Thread):
 
             # Pipe: process text content if and only if
             # response is not a sitemap (does not use the sitemaps protocol)
-            if not scraper.is_sitemap():
+            if not scraper.is_sitemap(resp):
                 tokens, words = scraper.process_text(resp)
                 if not worker_filter_resp_post_text(self, nurl, words):
                     self.frontier.mark_nurl_complete(nurl)
@@ -392,7 +391,6 @@ class Worker(Thread):
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
                 f"(filter='ok',finish={nurl.finish}"
-                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap()})"
+                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap(resp)})"
             )
-
 
