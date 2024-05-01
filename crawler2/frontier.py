@@ -188,11 +188,13 @@ class Frontier(object):
                     'rparser': rparser,
                 }
 
+                # add sitemaps urls if it exists
                 sitemap_urls = rparser.site_maps()
-                for sitemap_url in sitemap_urls:
-                    sitemap_nurl = Nurl(sitemap_url)
-                    sitemap_nurl.set_parent(robots_url)
-                    self.add_nurl(sitemap_nurl)
+                if sitemap_urls:
+                    for sitemap_url in sitemap_urls:
+                        sitemap_nurl = Nurl(sitemap_url)
+                        sitemap_nurl.set_parent(robots_url)
+                        self.add_nurl(sitemap_nurl)
 
         return self.domains[base_url]
 
