@@ -20,6 +20,6 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--restart", action="store_true", default=False)
     parser.add_argument("--config_file", type=str, default="config.ini")
-    parser.add_argument("--use_cache", default=False)
+    parser.add_argument("--use_cache", action="store_true", default=False)
     args = parser.parse_args()
     main(args.config_file, args.restart, args.use_cache)
