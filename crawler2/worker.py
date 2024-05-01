@@ -297,7 +297,7 @@ def worker_sift_urls(w, nurl, scraped_urls):
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
-        self.logger = get_logger(f"worker-new-{worker_id}", "worker")
+        self.logger = get_logger(f"worker2-{worker_id}", "worker")
         self.config = config
         self.frontier = frontier
         _assert_no_requests()
@@ -310,31 +310,58 @@ class Worker(Thread):
             nurl = self.frontier.get_tbd_nurl()
             if nurl == None:
                 # No more URLs
+                self.logger.info("Frontier empty; stopping worker")
                 break
+            self.logger.info(
+                f"Fetched {nurl.url}"
+            )
 
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
             if ok == E_BAD:
                 self.frontier.mark_nurl_complete(nurl)
+                self.logger.info(
+                    f"Tried to download {nurl.url}, "
+                    f"but was rejected by robots.txt "
+                    f"(finish={nurl.finish})"
+                )
                 continue
 
             # Pipe: get response
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=self.frontier.use_cache)
             if ok == E_AGAIN:
                 self.frontier.add_nurl(nurl)
+                self.logger.info(
+                    f"Tried to download {nurl.url}, "
+                    f"but response was None, and should try again later... "
+                )
                 continue
             if ok != E_OK:
+                self.logger.info(
+                    f"Tried to download {nurl.url}, "
+                    f"but was skipped... "
+                )
                 continue
 
             # Pipe: filter response
             if not worker_filter_resp_pre(self, nurl, resp):
                 self.frontier.mark_nurl_complete(nurl)
+                self.logger.info(
+                    f"Downloaded {nurl.url}, "
+                    f"but response was filtered before it was processed "
+                    f"(filter='resp_pre',finish={nurl.finish})"
+                )
                 continue
 
             # Pipe: process text content
             tokens, words = scraper.process_text(resp)
             if not worker_filter_resp_post_text(self, nurl, words):
                 self.frontier.mark_nurl_complete(nurl)
+                self.logger.info(
+                    f"Downloaded {nurl.url}, "
+                    f"but response was filtered after its text was processed "
+                    f"(filter='resp_post_text',finish={nurl.finish})"
+                )
                 continue
 
             # Pipe: scrape/extract valid URLs and transform to nurls
@@ -346,5 +373,10 @@ class Worker(Thread):
             for chld in sifted_nurls:
                 self.frontier.add_nurl(chld)
             self.frontier.mark_nurl_complete(nurl)
+            self.logger.info(
+                f"Successfully downloaded {nurl.url} "
+                f"(filter='ok',finish={nurl.finish}"
+                f",scraped={len(sifted_nurls)})"
+            )
 
 
