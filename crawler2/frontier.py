@@ -13,8 +13,6 @@ from collections import deque
 from threading import RLock
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
-import requests
-from xml.etree import ElementTree
 import os
 
 
