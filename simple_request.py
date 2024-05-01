@@ -86,4 +86,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print("DO NOT USE simple_request.py DURING THE DEPLOYMENT PERIOD")
+    print("TERMINATING PREMATURELY")
+    #main()
