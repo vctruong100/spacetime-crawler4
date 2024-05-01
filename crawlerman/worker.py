@@ -40,7 +40,7 @@ class Worker(Thread):
         self.frontier = frontier
         #_assert_no_requests()
 
-        self.file = open("manf.log", "w")
+        self.file = open("manf.log", "a")
 
         super().__init__(daemon=True)
 
