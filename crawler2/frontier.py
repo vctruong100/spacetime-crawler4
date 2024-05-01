@@ -5,13 +5,14 @@
 # interface uses Nurls (node URLS) instead of urls (strings)
 
 from crawler2.polmut import PoliteMutex
-from urllib.parse import urlparse
-from urllib.robotparser import RobotFileParser
 from crawler2.nap import Nap
 from crawler2.nurl import Nurl
+from utils import get_logger
+
 from collections import deque
 from threading import RLock
-from utils import get_logger
+from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 import os
 
 
@@ -233,7 +234,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[url] = nurl
-        		# not yet downloaded
+                # not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
@@ -245,7 +246,7 @@ class Frontier(object):
                 if nurl.status == 0x1:
                     nurl.status = 0x0
                     self.nap[nurl.url] = nurl
-		        # not yet downloaded
+                # not yet downloaded
                 if nurl.status == 0x0:
                     self.add_nurl(nurl)
 
