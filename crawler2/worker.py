@@ -108,7 +108,7 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
         # Download URL
         with frontier.dpolmut:
             if pmut: pmut.lock()
-            resp = download(url, use_cache)
+            resp = download(url, config=config, logger=logger, use_cache=use_cache)
             if pmut: pmut.unlock()
 
         # If retries exceeded or response is not a server error, stop trying
