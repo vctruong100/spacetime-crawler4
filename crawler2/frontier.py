@@ -7,12 +7,12 @@
 from crawler2.polmut import PoliteMutex
 from crawler2.nap import Nap
 from crawler2.nurl import Nurl
+from crawler2.robots import robots
 from utils import get_logger
 
 from collections import deque
 from threading import RLock
 from urllib.parse import urlparse
-from urllib.robotparser import RobotFileParser
 import os
 
 
@@ -163,9 +163,12 @@ class Frontier(object):
 
                 # lock the PoliteMutex for the domain
                 with self.dpolmut:
-                    rparser = RobotFileParser()
-                    rparser.set_url(f"{base_url}/robots.txt")
-                    rparser.read()
+                    rparser = robots(
+                        base_url,
+                        config=self.config,
+                        logger=self.logger,
+                        use_cache=self.use_cache
+                    )
                     crawl_delay = rparser.crawl_delay(self.config.user_agent)
 
                     if crawl_delay is None:
