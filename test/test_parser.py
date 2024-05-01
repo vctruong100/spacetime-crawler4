@@ -3,7 +3,7 @@ import pickle
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, urlunparse
 from utils.response import Response
-from helpers.page_cache import parse_response
+from helpers.parser import parse_response
 
 class MockRawResponse:
     def __init__(self, content, is_redirect=False):

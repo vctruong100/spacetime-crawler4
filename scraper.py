@@ -1,7 +1,7 @@
 import re
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
-from helpers.page_cache import parse_response
+from helpers.parser import parse_response
 
 def scraper(url, resp):
     # Handling not found (404), forbidden (403), and unauthorized pages (401) 

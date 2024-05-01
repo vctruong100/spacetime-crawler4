@@ -1,7 +1,9 @@
-# helpers/page_cache.py
+# helpers/parser.py
 #
-# caches parsed response data from a particular url
-# good for avoiding redundant work when parsing response
+# parses response data from a particular URL
+#
+# the parsed data is cached in PAGE_CACHE, which is
+# useful for avoiding redundant work when parsing response
 
 from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urldefrag

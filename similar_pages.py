@@ -2,7 +2,7 @@ from helpers.simhash import *
 from helpers.exhash import *
 import requests
 from utils.response import Response
-from helpers.page_cache import parse_response
+from helpers.parser import parse_response
 from crawler2.nurl import Nurl
 from helpers.word_count import *
 import time

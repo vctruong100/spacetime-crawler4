@@ -8,7 +8,7 @@ from utils.config import Config
 from utils.download import download
 from utils.server_registration import get_cache_server
 from utils import get_logger
-from helpers.page_cache import parse_response
+from helpers.parser import parse_response
 from helpers.word_count import to_tokens, word_count
 from time import sleep
 
