@@ -6,104 +6,144 @@
 from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urljoin, urlparse, urldefrag
 from bs4 import BeautifulSoup
-import requests
-from xml.etree import ElementTree as ET
-PAGE_CACHE = dict()
 
-PARSE_RESPONSE_LOGGER = get_logger("parse_response")
+
+PAGE_CACHE = dict()
+PARSER_LOGGER = get_logger("parser")
+
 
 class ParsedResponse:
     """Encapsulates the data from parsing the raw response data.
 
-    links: unique hyperlinks scraped from page
-    text_content: text scraped from page
-    """
+    links           unique hyperlinks scraped from page
+    text_content    text scraped from page
+    sitemap         whether response is a sitemap / sitemap index
 
-    def __init__(self, links, text_content):
+    """
+    def __init__(self, links, text_content, sitemap=False):
         self.links = links
         self.text_content = text_content
+        self.sitemap = sitemap
 
     def is_empty(self):
-        """Returns whether ParsedResponse was empty (did not parse any useful data)
+        """Returns whether ParsedResponse was empty (did not parse any useful data).
+        If parsed response is a sitemap, then it returns False.
         """
-        return len(self.links) == 0 and len(self.text_content) == 0
+        if self.sitemap:
+            return False
+        return (len(self.links) == 0
+                and len(self.text_content) == 0)
 
-def parse_sitemap(content):
-    """Parses the sitemap content and returns a list of URLs.
 
-    :param content str: The content of the sitemap
-    :return: The list of URLs in the sitemap
-    :rtype: list
+def parse_sitemap_index(tag):
+    """Parses the soup tag as a sitemap index.
+    Returns a list of URLs.
+
+    :param tag: The <sitemapindex> tag from the XML content
+    :return: The list of sitemap URLs in the sitemap index
+    :rtype: list[str]
+
     """
-    tree = ET.fromstring(content)
     urls = []
-    if tree.tag.endswith('sitemapindex'):
-        # Handle sitemap index
-        for sitemap in tree.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}sitemap'):
-            loc = sitemap.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
-            if loc is not None:
-                sitemap_content = requests.get(loc.text).content
-                urls.extend(parse_sitemap(sitemap_content))  # Recursive call for sitemap index
-    else:
-        # Handle regular sitemap
-        for url in tree.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url'):
-            loc = url.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
-            if loc is not None:
-                urls.append(loc.text)
-
+    for sitemap in soup.findall('sitemap'):
+        if sitemap.loc:
+            urls.append(sitemap.loc.string)
     return urls
+
+
+def parse_sitemap(tag):
+    """Parses the soup content as a sitemap urlset.
+    Returns a list of URLs.
+
+    :param tag: The <urlset> tag from the XML content
+    :return: The list of URLs in the sitemap
+    :rtype: list[str]
+
+    """
+    urls = []
+    for url in soup.findall('url'):
+        if url.loc:
+            urls.append(url.loc.string)
+    return urls
+
+
 def parse_response(resp):
     """Parses the response if it does not exist in PAGE_CACHE and stores it.
     Otherwise, return the cached parsed data.
+    Always returns a ParsedResponse object regardless of status.
 
-    If response is a redirect, then the redirected URL is 'scraped' with no text content.
-    Always returns a ParsedResponse object.
+    If the response follows the sitemap protocol, then the ParsedResponse is
+    marked as a sitemap and as non-empty.
 
     :param resp Response: The response of the URL
     :return: The parsed response object
     :rtype: ParsedResponse
+
     """
 
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
+    # If it wasn't found, parse the response instead
     hash = get_urlhash(normalize(resp.url))
     if hash in PAGE_CACHE:
         return PAGE_CACHE[hash]
 
+    # If response was not successful or no content exists,
+    # then assume an empty parsed response
+    if (resp.status != 200
+        or not hasattr(resp.raw_response, 'content')):
+        PAGE_CACHE[hash] = ParsedResponse(set(), [])
+        return PAGE_CACHE[hash]
+
+    raw_resp = resp.raw_response
     links = set()
     text_content = []
 
     # Retrieve 'Content-Type' header from response
-    content_type = resp.raw_response.headers.get('Content-Type', '')
-    # Check if response url ends with xml or if content-type indicate XML data:
+    content_type = raw_resp.headers.get('Content-Type', '')
+
+    # Check if content is a sitemap / sitemap index
+    # Sitemaps are XML data; check if content-type indicates XML data
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-    if resp.url.endswith('.xml') or 'application/xml' in content_type or 'text/xml' in content_type:
-        # Parse and add all urls from sitemap
-        urls = parse_sitemap(resp.raw_response.content)
+    if ('application/xml' in content_type
+        or 'text/xml' in content_type):
+        xml_soup = BeautifulSoup(raw_resp.content, 'lxml-xml')
+
+        # Sitemaps protocol
+        # https://www.sitemaps.org/protocol.html
+        if xml_soup.sitemapindex:
+            # Handle sitemap index
+            urls = parse_sitemap_index(xml_soup.sitemapindex)
+        elif soup.urlset:
+            # Handle sitemap
+            urls = parse_sitemap(xml_soup.urlset)
+        else:
+            # Does not follow the protocol
+            PAGE_CACHE[hash] = ParsedResponse(links, text_content)
+            return PAGE_CACHE[hash]
+
+        # Add urls from parsed sitemap
         for url in urls:
             abs_url = urljoin(resp.url, url)
             links.add(abs_url)
-        PAGE_CACHE[hash] = ParsedResponse(links, [])
+
+        # Add to page cache
+        PAGE_CACHE[hash] = ParsedResponse(links, text_content, sitemap=True)
         return PAGE_CACHE[hash]
 
-    # Cached data does not exist, so try parsing resp
 
-    # Check if response is successful
-    if resp.status == 200 and hasattr(resp.raw_response, 'content'):
-        soup = BeautifulSoup(resp.raw_response.content, 'lxml')
+    html_soup = BeautifulSoup(raw_resp.content, 'lxml')
 
-        # Extract all hyperlinks using soup.find_all('a', href=True)
-        for link in soup.find_all('a', href=True):
-            # Add the link to the set of links
-            abs_link = urljoin(resp.url, link['href'])
+    # Extract all hyperlinks using soup.find_all('a', href=True)
+    for link in soup.find_all('a', href=True):
+        # Add the link to the set of links
+        abs_link = urljoin(resp.url, link['href'])
 
-            # Defrag the url
-            abs_link = urldefrag(abs_link).url
+        # Defrag and normalize the URL first
+        abs_link = urldefrag(abs_link).url
+        abs_link = normalize(abs_link)
 
-            # Normalize the url
-            abs_link = normalize(abs_link)
-
-            links.add(abs_link)
+        links.add(abs_link)
 
         # Extract stripped text using soup.stripped_strings
         # Only include non-empty text in text_content
@@ -115,10 +155,6 @@ def parse_response(resp):
         # the list of links and the joined text content
         PAGE_CACHE[hash] = ParsedResponse(links, text_content)
 
-    else:
-        # Store empty parsed response if status is not 200 or
-        # content is missing
-        PAGE_CACHE[hash] = ParsedResponse(set(), [])
-
     # Return parsed response
     return PAGE_CACHE[hash]
+

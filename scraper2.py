@@ -50,12 +50,20 @@ def process_text(resp):
     parsed_resp = parse_response(resp)
 
     # get tokens
+    # then compute word frequency dict
     tokens = to_tokens(parsed_resp.text_content)
-
-    # compute word frequency dict
     wordcnts = word_count(tokens)
 
     return (tokens, wordcnts)
+
+
+def is_sitemap(resp):
+    """Returns whether the parsed response is a sitemap or not.
+    """
+    parsed_resp = parse_response(resp)
+    if parsed_resp.sitemap:
+        return True
+    return False
 
 
 def is_valid(url, strict=True):
