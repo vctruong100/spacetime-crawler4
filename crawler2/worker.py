@@ -353,16 +353,18 @@ class Worker(Thread):
                 )
                 continue
 
-            # Pipe: process text content
-            tokens, words = scraper.process_text(resp)
-            if not worker_filter_resp_post_text(self, nurl, words):
-                self.frontier.mark_nurl_complete(nurl)
-                self.logger.info(
-                    f"Downloaded {nurl.url}, "
-                    f"but response was filtered after its text was processed "
-                    f"(filter='resp_post_text',finish={nurl.finish})"
-                )
-                continue
+            # Pipe: process text content if and only if
+            # response is not a sitemap (does not use the sitemaps protocol)
+            if not scraper.is_sitemap():
+                tokens, words = scraper.process_text(resp)
+                if not worker_filter_resp_post_text(self, nurl, words):
+                    self.frontier.mark_nurl_complete(nurl)
+                    self.logger.info(
+                        f"Downloaded {nurl.url}, "
+                        f"but response was filtered after its text was processed "
+                        f"(filter='resp_post_text',finish={nurl.finish})"
+                    )
+                    continue
 
             # Pipe: scrape/extract valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp)
@@ -376,7 +378,7 @@ class Worker(Thread):
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
                 f"(filter='ok',finish={nurl.finish}"
-                f",scraped={len(sifted_nurls)})"
+                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap()})"
             )
 
 
