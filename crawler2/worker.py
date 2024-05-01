@@ -113,7 +113,7 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
 
         # If retries exceeded or response is not a server error, stop trying
         if (retries >= MAX_RETRIES
-            or resp.status not in range(500, 512):
+            or resp.status not in range(500, 512)):
             return (E_OK if resp else E_AGAIN, resp)
 
         # Wait and increment retries
@@ -145,7 +145,7 @@ def worker_filter_resp_pre(w, nurl, resp):
     # Filter response by cache server errors
     if (resp.status in range(600, 606+1)
         or resp.raw_response == None):
-        nurl.finish = NURL_FINISH_CACHE_ERROR):
+        nurl.finish = NURL_FINISH_CACHE_ERROR
         return False
 
     raw_resp = resp.raw_response
