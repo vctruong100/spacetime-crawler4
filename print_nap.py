@@ -43,5 +43,9 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("usage: python print_nap.py <napfile>")
         sys.exit(1)
+
+    # encode stdout to utf-8
+    sys.stdout.reconfigure(encoding="utf-8")
+
     main(sys.argv[1])
 
