@@ -41,8 +41,9 @@ MAX_RELDEPTH = 1
 MAX_MONODEPTH = 2
 MAX_DUPDEPTH = 0
 
-MIN_WORDS = 200
-
+MIN_WORDS = 20
+MIN_MAX_WORD_COUNT = 2
+MIN_UNIQUE_WORDS = 5
 
 def _assert_no_requests():
     # basic check for requests in scraper3
@@ -227,9 +228,22 @@ def worker_filter_resp_post_text(w, nurl, words):
     logger = w.logger
     nap = frontier.nap
 
-    # Filter response by word counts
-    # If there are too few words, then mark as low-info response
-    if sum(words.values()) < MIN_WORDS:
+    # Assign words to nurl
+    # (already tokenized and counted words)
+    nurl.words = words
+
+    # Filter response by low-info:
+    #   -   If there are too few unique words,
+    #       then the content isn't 'diverse' enough.
+    #
+    #   -   If the maximum word count per word isn't high,
+    #       then the content is likely 'spam'.
+    #
+    #   -   If there are too few words,
+    #       then the content isn't worth exploring.
+    if (len(word.keys()) < MIN_UNIQUE_WORDS
+        or max(words.values()) < MIN_MAX_WORD_COUNT
+        or sum(words.values()) < MIN_WORDS):
         nurl.finish = NURL_FINISH_LOWINFO_POST
         return False
 
