@@ -142,6 +142,12 @@ def worker_filter_resp_pre(w, nurl, resp):
         nurl.finish = NURL_FINISH_BAD
         return False
 
+    # Filter response by cache server errors
+    if (resp.status in range(600, 606+1)
+        or resp.raw_response == None):
+        nurl.finish = NURL_FINISH_CACHE_ERROR):
+        return False
+
     raw_resp = resp.raw_response
 
     # Filter response by redirects

@@ -40,11 +40,6 @@ def parse_response(resp):
     :rtype: ParsedResponse
     """
 
-    # Check for cache server errors
-    if resp.status in range(600, 606+1) or resp.raw_response is None:
-        PARSE_RESPONSE_LOGGER.error(f"Error: HTTP Status {resp.status} - {resp.error}: {resp.url}")
-        return ParsedResponse(set(), [])
-
     # Hash the normalized url (removes trailing '/')
     # Try to get the cached data
     hash = get_urlhash(normalize(resp.url))

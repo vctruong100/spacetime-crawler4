@@ -24,7 +24,7 @@ NURL_FINISH_TOO_EXACT = 0x4
 NURL_FINISH_TOO_SIMILAR = 0x5
 NURL_FINISH_NOT_ALLOWED = 0x6
 NURL_FINISH_REDIRECT = 0x7
-
+NURL_FINISH_CACHE_ERROR = 0xFF
 
 def _compute_rel_dirdepth(child, parent):
     """Checks if the child URL is below the parent URL.
@@ -86,6 +86,9 @@ class Nurl:
                     -   0x3: low-info-post
                     -   0x4: too-exact
                     -   0x5: too-similar
+                    -   0x6: not-allowed
+                    -   0x7: redirected
+                    -   0xFF: cache server error (status=600+)
 
     absdepth    The absolute depth (relative to seed URL).
 
