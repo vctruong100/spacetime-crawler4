@@ -113,7 +113,7 @@ class Worker(Thread):
                         f"but response was filtered after its text was processed "
                         f"(filter='resp_post_text',finish={nurl.finish})"
                     )
-                    _flush_nurl(nurl)
+                    _flush_nurl(nurl, self.file)
                     continue
 
             # Pipe: scrape/extract valid URLs and transform to nurls
