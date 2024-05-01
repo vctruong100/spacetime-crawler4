@@ -7,8 +7,6 @@ from threading import Thread
 
 from inspect import getsource
 from utils import get_logger
-from utils.download import download
-from utils.response import Response
 
 import scraper2 as scraper
 import time
@@ -17,6 +15,7 @@ from helpers.exhash import exhash
 from helpers.simhash import simhash, compare_fingerprints
 
 from crawler2.nurl import *
+from crawler2.download import download
 
 
 # worker internal status codes
@@ -49,17 +48,6 @@ def _assert_no_requests():
     # basic check for requests in scraper3
     assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper2.py"
     assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper2.py"
-
-
-def _fake_response(resp):
-    """Creates a blanket Response object from utils.response.Response
-    """
-    resp2 = Response.__new__(Response)
-    resp2.url = resp.url
-    resp2.status = resp.status_code
-    resp2.raw_response = resp
-    resp2.error = ""
-    return resp2
 
 
 def worker_get_domain_info(w, nurl):
@@ -108,44 +96,29 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
     logger = w.logger
     url = nurl.url
 
-    if not use_cache:
-        # standard download
-        import requests
+    # Downloads the URL
+    # Response interface defined in "utils.response.Response"
+    # Retry only if `use_cache` is True
+
+    MAX_RETRIES = len(RETRY_DELAY) if use_cache else 0
+    retries = 0
+    resp = None
+
+    while True:
+        # Download URL
         with frontier.dpolmut:
-            if pmut:
-                pmut.lock()
-            resp = requests.get(url)
-            if pmut:
-                pmut.unlock()
-            return (E_OK, _fake_response(resp))
-    else:
-        # from cache server
-        retries = 0
-        resp = None
-        while True:
-            # Download the URL
-            with frontier.dpolmut:
-                if pmut:
-                    pmut.lock()
-                resp = download(url, config, logger)
-                if pmut:
-                    pmut.unlock()
+            if pmut: pmut.lock()
+            resp = download(url, use_cache)
+            if pmut: pmut.unlock()
 
-            # If response is not a server error or retries exceeded, stop trying
-            if (resp.status not in range(500, 512) or
-                retries >= len(RETRY_DELAY)):
-                break
+        # If retries exceeded or response is not a server error, stop trying
+        if (retries >= MAX_RETRIES
+            or resp.status not in range(500, 512):
+            return (E_OK if resp else E_AGAIN, resp)
 
-            # Wait and increment retries
-            # Worst case scenario: the thread halts indefinitely until its retries are exhausted
-            time.sleep(RETRY_DELAY[retries])
-            retries += 1
-
-        if not resp:
-            # This should not happen
-            return (E_AGAIN, None)
-
-        return (E_OK, resp)
+        # Wait and increment retries
+        time.sleep(RETRY_DELAY[retries])
+        retries += 1
 
 
 def worker_filter_resp_pre(w, nurl, resp):
