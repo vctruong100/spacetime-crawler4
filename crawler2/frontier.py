@@ -156,6 +156,7 @@ class Frontier(object):
         """
         parsed_url = urlparse(url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        robots_url = f"{base_url}/robots.txt"
 
         with self.domainmut: # lock domain cache
             if base_url not in self.domains:
@@ -193,7 +194,13 @@ class Frontier(object):
                 if sitemap_urls:
                     for sitemap_url in sitemap_urls:
                         sitemap_nurl = Nurl(sitemap_url)
-                        sitemap_nurl.set_parent(robots_url)
+
+                        # manually set nurl attributes
+                        # the parent is left unhashed as the robots_url
+                        # unhashed parent indicates that URL is not stored as a nurl
+                        sitemap_nurl.parent = robots_url
+                        sitemap_nurl.absdepth += 1
+
                         self.add_nurl(sitemap_nurl)
 
         return self.domains[base_url]

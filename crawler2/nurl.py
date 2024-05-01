@@ -72,6 +72,8 @@ class Nurl:
     hash        The hash of the normalized URL.
 
     parent      The hash of the parent URL (where the URL was found).
+                If the parent is unhashed as an absolute URL, then
+                the URL does not exist as a nurl.
 
     status      The intermediate state of the URL as an int.
                     -   0x0: un-downloaded
