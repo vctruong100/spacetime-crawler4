@@ -30,7 +30,8 @@ def main(napfile):
     errors = 0
     longest_page = ('', 0)  # URL and length
 
-    for url, data in nap.dict.items():
+    for hash, data in nap.dict.items():
+        url = data['url']
         parsed_url = urlparse(url)
         hostname = parsed_url.hostname
 
