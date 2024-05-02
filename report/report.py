@@ -4,6 +4,7 @@
 
 import sys
 from crawler2.nap import Nap
+from crawler2.nurl import NURL_STATUS_IS_DOWN, NURL_FINISH_OK
 from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
 from helpers.word_count import word_count, to_tokens
@@ -57,6 +58,7 @@ def main(napfile):
     print("Unique pages successfully downloaded:", unique_pages)
     print("Total number of errors:", errors)
 
+    print("Subdomains:")
     for subdomain in sorted(subdomains):
         print(f"{subdomain}, {subdomains[subdomain]}") # based on requirements
 
