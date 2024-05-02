@@ -269,7 +269,6 @@ def worker_filter_resp_post_text(w, nurl, words):
                 # make new bucket
                 nap.smdict[raw_hash] = [nurl.hash, []]
 
-    nurl.words = words
     return True
 
 
