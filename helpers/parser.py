@@ -46,8 +46,9 @@ def parse_sitemap_index(tag):
     :rtype: list[str]
 
     """
+    # For all <sitemap> tags, extract URL from its <loc> tag
     urls = []
-    for sitemap in soup.findall('sitemap'):
+    for sitemap in tag.find_all('sitemap'):
         if sitemap.loc:
             urls.append(sitemap.loc.string)
     return urls
@@ -62,8 +63,9 @@ def parse_sitemap(tag):
     :rtype: list[str]
 
     """
+    # For all <url> tags, extract URL from its <loc> tag
     urls = []
-    for url in soup.findall('url'):
+    for url in tag.find_all('url'):
         if url.loc:
             urls.append(url.loc.string)
     return urls
@@ -116,7 +118,7 @@ def parse_response(resp):
         if xml_soup.sitemapindex:
             # Handle sitemap index
             urls = parse_sitemap_index(xml_soup.sitemapindex)
-        elif soup.urlset:
+        elif xml_soup.urlset:
             # Handle sitemap
             urls = parse_sitemap(xml_soup.urlset)
         else:
