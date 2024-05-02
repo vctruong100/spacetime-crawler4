@@ -6,21 +6,8 @@ import sys
 from crawler2.nap import Nap
 from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
+from helpers.word_count import word_count, to_tokens
 from urllib.parse import urlparse
-
-def count_words(word_dict):
-    """Count the frequency of words in a dictionary of words and their frequencies.
-
-    :param word_dict: A dictionary of words and their frequencies
-    :return: A dictionary of words and their total frequencies
-    """
-    count_dict = {}
-    for word, frequency in word_dict.items():
-        if word in count_dict:
-            count_dict[word] += frequency
-        else:
-            count_dict[word] = frequency
-    return count_dict
 
 def sort_words_by_frequency(word_dict, top_n=50):
     """Sort words by frequency and return the top N words.
@@ -38,7 +25,7 @@ def main(napfile):
     total_urls = len(nap.dict)
     unique_pages = 0
     subdomains = {}
-    word_counts = {}
+    wc = {}
     errors = 0
     longest_page = ('', 0)  # URL and length
 
@@ -57,13 +44,11 @@ def main(napfile):
             if words > longest_page[1]:
                 longest_page = (url, words)
 
-            page_words = count_words(data['words'])
-            for word, count in page_words.items():
+            tokens = to_tokens([text for text in data['words'].keys()])
+            page_word_counts = word_count(tokens)
+            for word, count in page_word_counts.items():
                 if not is_stopword(word):
-                    if word in word_counts:
-                        word_counts[word] += count
-                    else:
-                        word_counts[word] = count
+                    wc[word] = wc.get(word, 0) + count
 
         if data['finish'] != NURL_FINISH_OK:
             errors += 1
@@ -76,8 +61,8 @@ def main(napfile):
         print(f"{subdomain}, {subdomains[subdomain]}") # based on requirements
 
     print("\nTop 50 common words:")
-    for word in common_words(word_counts, 50):
-        print(word, word_counts[word])
+    for word in common_words(wc, 50):
+        print(word, wc[word])
 
     print("\nLongest page by word count:")
     print("URL:", longest_page[0])
