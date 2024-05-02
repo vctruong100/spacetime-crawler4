@@ -109,9 +109,10 @@ venv.bak/
 *.full.py
 *.shelve
 
-# zip files
+# archive files
 *.zip
+*.tar
+*.tar.gz
 
 # nap files from crawler2/nap
 *.nap
-
