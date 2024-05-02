@@ -55,7 +55,7 @@ def parse_sitemap_index(tag):
 
 
 def parse_sitemap(tag):
-    """Parses the soup content as a sitemap urlset.
+    """Parses the soup tag as a sitemap urlset.
     Returns a list of URLs.
 
     :param tag: The <urlset> tag from the XML content
