@@ -41,11 +41,16 @@ def main(napfile):
         if data['status'] == NURL_STATUS_IS_DOWN:
             unique_pages += 1
             words = sum(data['words'].values())
+
+            # If this page has more words than the current longest page, update it
             if words > longest_page[1]:
                 longest_page = (url, words)
 
+            # Convert text content key to tokens and count frequency of each token
             tokens = to_tokens([text for text in data['words'].keys()])
             page_word_counts = word_count(tokens)
+
+            # Increment word count in the global word count dictionary
             for word, count in page_word_counts.items():
                 if not is_stopword(word):
                     wc[word] = wc.get(word, 0) + count
