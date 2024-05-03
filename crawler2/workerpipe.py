@@ -300,7 +300,7 @@ def worker_transform_urls(w, nurl, scraped_urls):
         # Append nurl hash to parent nurl links
         nurl.links.append(chld.hash)
 
-        # Append to sifted nurls
+        # Append to transformed nurls
         transformed_nurls.append(chld)
 
     return transformed_nurls
