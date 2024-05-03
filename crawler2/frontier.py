@@ -54,7 +54,6 @@ class Frontier(object):
 
         self.nurls = Queue()
         self.domains = dict()
-        self.nurlmut = RLock()
         self.domainmut = RLock()
         self.dpolmut = PoliteMutex(self.config.time_delay)
 
@@ -78,9 +77,7 @@ class Frontier(object):
             if not self.nap.exists(nurl.url):
                 self.nap[nurl.url] = nurl
 
-        # Append nurl to deque
-        with self.nurlmut:
-            self.nurls.put(nurl)
+        self.nurls.put(nurl)
 
 
     def get_tbd_nurl(self):
@@ -93,26 +90,31 @@ class Frontier(object):
         :rtype: Nurl | None
         """
 
-        # Try getting a nurl in a LIFO queue
-        # This means URLs are searched depth-first
-        try:
-            nurl = self.nurls.get()
-        except Empty:
-            return None
+        # Repeat until it retrieves the next un-downloaded nurl not in-use
+        while True:
+            # Try getting a nurl in a LIFO queue
+            # This means URLs are searched depth-first
+            try:
+                nurl = self.nurls.get()
+            except Empty:
+                return None
 
-        # check status
-        # ignore status codes {NURL_STATUS_IN_USE, NURL_STATUS_IS_DOWN}
-        # these converge to the nurl downloading (which isn't ideal)
-        with self.nap.mutex:
-            # note: nurls are cached
-            # fetch the actual nurl data, which is
-            # guaranteed to exist because of add_nurl
-            # if un-downloaded, update status and return the nurl
-            nurl = self.nap[nurl.url]
-            if nurl.status == NURL_STATUS_NO_DOWN:
-                nurl.status = NURL_STATUS_IN_USE # in-use
-                self.nap[nurl.url] = nurl
-                return nurl
+            # check status
+            # ignore status codes {NURL_STATUS_IN_USE, NURL_STATUS_IS_DOWN}
+            # these converge to the nurl downloading (which isn't ideal)
+            with self.nap.mutex:
+                # note: nurls are cached
+                # fetch the actual nurl data, which is
+                # guaranteed to exist because of add_nurl
+                # if un-downloaded, update status and return the nurl
+                nurl = self.nap[nurl.url]
+                if nurl.status == NURL_STATUS_NO_DOWN:
+                    nurl.status = NURL_STATUS_IN_USE # in-use
+                    self.nap[nurl.url] = nurl
+                    return nurl
+
+            # Processed completely
+            self.nurls.task_done()
 
 
     def get_domain_info(self, url):
