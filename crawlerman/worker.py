@@ -3,7 +3,7 @@
 # manual version of crawler2/worker.py
 
 from threading import Thread
-from crawler2.worker import *
+from crawler2.workerpipe import *
 
 
 def _flush_nurl(nurl, file):
@@ -61,10 +61,25 @@ class Worker(Thread):
                 f"Fetched {nurl.url}"
             )
 
+            # Pipe: sift URL before considering it
+            if not worker_sift_nurl(self, nurl):
+                # Do not mark URLs as complete in case the crawler changes its mind
+                # Instead, skip the URL entirely, but mark it as sifted
+                self.frontier.mark_nurl_complete(nurl, status=NURL_STATUS_NO_DOWN)
+                self.frontier.nurls.task_done()
+                self.logger.info(
+                    f"Tried to fetch {nurl.url}, "
+                    f"but was sifted "
+                    f"(finish={nurl.finish})"
+                )
+                _flush_nurl(nurl, self.file)
+                continue
+
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
-            if ok == E_BAD:
+            if ok == PIPE_BAD:
                 self.frontier.mark_nurl_complete(nurl)
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but was rejected by robots.txt "
@@ -75,15 +90,17 @@ class Worker(Thread):
 
             # Pipe: get response
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=self.frontier.use_cache)
-            if ok == E_AGAIN:
+            if ok == PIPE_AGAIN:
                 self.frontier.add_nurl(nurl)
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but response was None, and should try again later... "
                 )
                 _flush_nurl(nurl, self.file)
                 continue
-            if ok != E_OK:
+            if ok != PIPE_OK:
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but was skipped... "
@@ -93,6 +110,7 @@ class Worker(Thread):
 
             # Pipe: filter response
             if not worker_filter_resp_pre(self, nurl, resp):
+                self.frontier.nurls.task_done()
                 self.frontier.mark_nurl_complete(nurl)
                 self.logger.info(
                     f"Downloaded {nurl.url}, "
@@ -107,6 +125,7 @@ class Worker(Thread):
             if not scraper.is_sitemap(resp):
                 tokens, words = scraper.process_text(resp)
                 if not worker_filter_resp_post_text(self, nurl, words):
+                    self.frontier.nurls.task_done()
                     self.frontier.mark_nurl_complete(nurl)
                     self.logger.info(
                         f"Downloaded {nurl.url}, "
@@ -116,19 +135,20 @@ class Worker(Thread):
                     _flush_nurl(nurl, self.file)
                     continue
 
-            # Pipe: scrape/extract valid URLs and transform to nurls
+            # Pipe: scrape valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp, strict=False)
-            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
+            transformed_nurls = worker_transform_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
-            for chld in sifted_nurls:
+            for chld in transformed_nurls:
                 self.frontier.add_nurl(chld)
+            self.frontier.nurls.task_done()
             self.frontier.mark_nurl_complete(nurl)
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
                 f"(filter='ok',finish={nurl.finish}"
-                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap(resp)})"
+                f",scraped={len(transformed_nurls)},sitemap={scraper.is_sitemap(resp)})"
             )
             _flush_nurl(nurl, self.file)
 

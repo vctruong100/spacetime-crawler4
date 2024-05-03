@@ -6,11 +6,11 @@
 
 from crawler2.polmut import PoliteMutex
 from crawler2.nap import Nap
-from crawler2.nurl import Nurl
+from crawler2.nurl import *
 from crawler2.robots import robots
 from utils import get_logger
 
-from collections import deque
+from queue import Queue, Empty
 from threading import RLock
 from urllib.parse import urlparse
 import os
@@ -33,29 +33,26 @@ class Frontier(object):
                 Undefined otherwise.
 
     nap         The nap object (stores nurl data)
-    nurls       Deque object that store nurls to download
+    nurls       Queue object that store nurls to download
     domains     Mapping of domains to PoliteMutexes and RobotParsers
                 Enforces multi-threaded politeness per domain.
 
-    nurlmut     Reentrant lock object on self.nurls
     domainmut   Reentrant lock object on self.domains
     dpolmut     PoliteMutex object on downloading any URLs
 
     """
-    def __init__(self, config, restart, use_cache, policy=("dfs",0)):
+    def __init__(self, config, restart, use_cache):
         """Initializes the frontier.
 
         :param config: Config object
         :param restart: Whether crawler should restart
         :param use_cache: Whether crawler should use the cache server
-        :param policy: The traversal policy
         """
         self.logger = get_logger("frontier2")
         self.config = config
         self.use_cache = use_cache
-        self.policy = policy
 
-        self.nurls = deque()
+        self.nurls = Queue()
         self.domains = dict()
         self.nurlmut = RLock()
         self.domainmut = RLock()
@@ -73,7 +70,7 @@ class Frontier(object):
         :param nurl Nurl: The nurl object
         """
         # Already downloaded
-        if nurl.status == 0x2:
+        if nurl.status == NURL_STATUS_IS_DOWN:
             return
 
 	    # Add nurl to nap iff it doesn't exist
@@ -95,55 +92,28 @@ class Frontier(object):
         :return: The next un-downloaded nurl
         :rtype: Nurl | None
         """
-        # exhaust the nurls deque until it
-        # retrieves a valid nurl
-        while True:
-            nurl = None
-            # thread-safe nurl retrieval
-            # note: deque being thread-safe is not sufficient
-            # because of the intermediate state of hybrid traversal
-            try:
-                trav, H = self.policy
 
-                # lock nurls deque
-                self.nurlmut.acquire()
+        # Try getting a nurl in a LIFO queue
+        # This means URLs are searched depth-first
+        try:
+            nurl = self.nurls.get()
+        except Empty:
+            return None
 
-                # perform some traversal depending on the policy
-                if trav == "dfs":
-                    # depth-first search
-                    nurl = self.nurls.pop()
-                elif trav == "bfs":
-                    # breadth-first search
-                    nurl = self.nurls.popleft()
-                elif trav == "hybrid":
-                    # hybrid search
-                    # does breadth-first until the first absdepth > H
-                    _top = self.nurls.popleft()
-                    if _top.absdepth <= H:
-                        return top
-                    else:
-                        self.nurls.appendleft(nurl) # add back top
-                        nurl = self.nurls.pop()
-            except IndexError:
-                # nurls must be empty
-                return None
-            finally:
-                # unlock nurls deque
-                self.nurlmut.release()
+        # check status
+        # ignore status codes {NURL_STATUS_IN_USE, NURL_STATUS_IS_DOWN}
+        # these converge to the nurl downloading (which isn't ideal)
+        with self.nap.mutex:
+            # note: nurls are cached
+            # fetch the actual nurl data, which is
+            # guaranteed to exist because of add_nurl
+            # if un-downloaded, update status and return the nurl
+            nurl = self.nap[nurl.url]
+            if nurl.status == NURL_STATUS_NO_DOWN:
+                nurl.status = NURL_STATUS_IN_USE # in-use
+                self.nap[nurl.url] = nurl
+                return nurl
 
-            # check status
-            # ignore status codes {0x1, 0x2}
-            # these converge to the nurl downloading (which isn't ideal)
-            with self.nap.mutex:
-                # note: nurls are cached
-                # fetch the actual nurl data, which is
-                # guaranteed to exist because of add_nurl
-                # if un-downloaded, update status and return the nurl
-                nurl = self.nap[nurl.url]
-                if nurl.status == 0x0:
-                    nurl.status = 0x1 # in-use
-                    self.nap[nurl.url] = nurl
-                    return nurl
 
     def get_domain_info(self, url):
         """Gets the domain information for the URL. If the domain
@@ -206,14 +176,15 @@ class Frontier(object):
         return self.domains[base_url]
 
 
-    def mark_nurl_complete(self, nurl):
+    def mark_nurl_complete(self, nurl, status=NURL_STATUS_IS_DOWN):
         """Marks the nurl as complete.
         Stops the crawler from re-downloading the URL.
         Only call this after the nurl has recomputed its attributes.
+        If status is defined, then sets the nurl status to the specified status code instead.
 
         :param nurl Nurl: The nurl object
         """
-        nurl.status = 0x2 # downloaded
+        nurl.status = status # downloaded OR user-defined status code
         with self.nap.mutex:
             self.nap[nurl.url] = nurl
 
@@ -223,8 +194,6 @@ class Frontier(object):
         Deletes any associated files with saving if restart=True.
         """
         _save_file = self.config.save_file
-        _robocache_file = f"{_save_file}.robocache"
-
         _save_file_exists = os.path.exists(_save_file)
         if not restart and not _save_file_exists:
             # Save file does not exist, but request to load save
@@ -251,11 +220,11 @@ class Frontier(object):
             with self.nap.mutex:
                 nurl = self.nap[url]
                 # remove intermediate state
-                if nurl.status == 0x1:
-                    nurl.status = 0x0
+                if nurl.status == NURL_STATUS_IN_USE:
+                    nurl.status = NURL_STATUS_NO_DOWN
                     self.nap[url] = nurl
                 # not yet downloaded
-                if nurl.status == 0x0:
+                if nurl.status == NURL_STATUS_NO_DOWN:
                     self.add_nurl(nurl)
 
         # Add remaining nurls found in save file
@@ -263,10 +232,10 @@ class Frontier(object):
             for dic in self.nap.dict.values():
                 nurl = Nurl.from_dict(dic)
                 # remove intermediate state
-                if nurl.status == 0x1:
-                    nurl.status = 0x0
+                if nurl.status == NURL_STATUS_IN_USE:
+                    nurl.status = NURL_STATUS_NO_DOWN
                     self.nap[nurl.url] = nurl
                 # not yet downloaded
-                if nurl.status == 0x0:
+                if nurl.status == NURL_STATUS_NO_DOWN:
                     self.add_nurl(nurl)
 
