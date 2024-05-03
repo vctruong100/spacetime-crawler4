@@ -25,7 +25,7 @@ def main(napfile):
     nap = Nap(napfile)
     total_urls = len(nap.dict)
     unique_pages = 0
-    subdomains = set()
+    subdomains = {}
     wc = {}
     errors = 0
     longest_page = ('', 0)  # URL and length
@@ -36,7 +36,10 @@ def main(napfile):
         hostname = parsed_url.hostname
 
         if hostname and hostname.endswith('ics.uci.edu'):
-            subdomains.add(hostname)
+            if hostname in subdomains:
+                subdomains[hostname] += 1
+            else:
+                subdomains[hostname] = 1
 
         if data['status'] == NURL_STATUS_IS_DOWN:
             unique_pages += 1
@@ -58,11 +61,13 @@ def main(napfile):
         if data['finish'] != NURL_FINISH_OK:
             errors += 1
 
-    print("Total URLs downloaded:", total_urls)
-    print("Unique pages successfully downloaded:", unique_pages)
+    print("Total Number of URLs downloaded:", total_urls)
+    print("Total Number of Unique pages successfully downloaded:", unique_pages)
     print("Total number of errors:", errors)
 
-    print("Number of subdomains found in 'ics.uci.edu':", len(subdomains))
+    print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
+    for subdomain, count in subdomains.items():
+        print(subdomain, count)
 
     print("\nTop 50 common words:")
     for word in common_words(wc, 50):
