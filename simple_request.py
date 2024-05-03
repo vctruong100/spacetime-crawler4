@@ -8,11 +8,11 @@ from utils.config import Config
 from utils.download import download
 from utils.server_registration import get_cache_server
 from utils import get_logger
-from helpers.page_cache import parse_response
+from helpers.parser import parse_response
 from helpers.word_count import to_tokens, word_count
 from time import sleep
 
-
+from crawler2.nurl import Nurl
 
 def main():
     config_file = "config.ini"
@@ -57,13 +57,13 @@ def main():
         for k,v in resp.headers.items():
             print(k,v,file=fh)
 
-        parsed = parse_response(resp_unraw.url, resp_unraw)
+        parsed = parse_response(Nurl(resp_unraw.url), resp_unraw)
         _tokens = to_tokens(parsed.text_content)
         _, wordcounts = word_count(_tokens)
 
         print(f"\nLinks extracted ({len(parsed.links)} links):\n", file=fh)
         for l in parsed.links:
-            print(l,file=fh)
+            print(l.url,file=fh)
 
         print(f"\nWord count ({len(wordcounts.keys())} unique words):\n", file=fh)
         for w,c in wordcounts.items():
@@ -86,4 +86,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print("DO NOT USE simple_request.py DURING THE DEPLOYMENT PERIOD")
+    print("TERMINATING PREMATURELY")
+    #main()

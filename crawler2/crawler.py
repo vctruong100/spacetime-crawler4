@@ -1,12 +1,18 @@
+# crawler2/crawler.py
+#
+# the crawler interface for "crawler2"
+# the only changes implemented are logger name change and imports
+
 from utils import get_logger
-from crawler.frontier import Frontier
-from crawler.worker import Worker
+from crawler2.frontier import Frontier
+from crawler2.worker import Worker
+
 
 class Crawler(object):
-    def __init__(self, config, restart, frontier_factory=Frontier, worker_factory=Worker):
+    def __init__(self, config, restart, use_cache, frontier_factory=Frontier, worker_factory=Worker):
         self.config = config
-        self.logger = get_logger("CRAWLER")
-        self.frontier = frontier_factory(config, restart)
+        self.logger = get_logger("crawler2")
+        self.frontier = frontier_factory(config, restart, use_cache)
         self.workers = list()
         self.worker_factory = worker_factory
 
@@ -20,6 +26,10 @@ class Crawler(object):
     def start(self):
         self.start_async()
         self.join()
+
+        # all worker threads have finished
+        # close the nap file before killing the main thread
+        self.frontier.nap.close()
 
     def join(self):
         for worker in self.workers:

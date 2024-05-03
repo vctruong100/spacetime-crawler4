@@ -21,18 +21,16 @@ def to_tokens(text_content):
     return tokens
 
 def word_count(tokens):
-    """Returns a tuple consisting of the content size (how many graphemes)
-    and the mapping of tokens/words to its frequency.
+    """Returns the mapping of tokens/words to its frequency.
 
     :param tokens list[str]: The list of tokens
-    :return: A tuple with content size (1) and the mapping (2)
-    :rtype: (int, dict[str, int])
+    :return: The mapping
+    :rtype: dict[str, int]
     """
     word_dict = dict()
     content_size = 0
 
     for token in tokens:
-        content_size += len(token)
         word_dict[token] = word_dict.get(token, 0) + 1
-    return (content_size, word_dict)
+    return word_dict
 
