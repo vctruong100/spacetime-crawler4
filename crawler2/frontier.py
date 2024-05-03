@@ -10,7 +10,7 @@ from crawler2.nurl import Nurl
 from crawler2.robots import robots
 from utils import get_logger
 
-from collections import deque
+from queue import Queue, Empty
 from threading import RLock
 from urllib.parse import urlparse
 import os
@@ -33,29 +33,26 @@ class Frontier(object):
                 Undefined otherwise.
 
     nap         The nap object (stores nurl data)
-    nurls       Deque object that store nurls to download
+    nurls       Queue object that store nurls to download
     domains     Mapping of domains to PoliteMutexes and RobotParsers
                 Enforces multi-threaded politeness per domain.
 
-    nurlmut     Reentrant lock object on self.nurls
     domainmut   Reentrant lock object on self.domains
     dpolmut     PoliteMutex object on downloading any URLs
 
     """
-    def __init__(self, config, restart, use_cache, policy=("dfs",0)):
+    def __init__(self, config, restart, use_cache):
         """Initializes the frontier.
 
         :param config: Config object
         :param restart: Whether crawler should restart
         :param use_cache: Whether crawler should use the cache server
-        :param policy: The traversal policy
         """
         self.logger = get_logger("frontier2")
         self.config = config
         self.use_cache = use_cache
-        self.policy = policy
 
-        self.nurls = deque()
+        self.nurls = Queue()
         self.domains = dict()
         self.nurlmut = RLock()
         self.domainmut = RLock()
@@ -95,55 +92,28 @@ class Frontier(object):
         :return: The next un-downloaded nurl
         :rtype: Nurl | None
         """
-        # exhaust the nurls deque until it
-        # retrieves a valid nurl
-        while True:
-            nurl = None
-            # thread-safe nurl retrieval
-            # note: deque being thread-safe is not sufficient
-            # because of the intermediate state of hybrid traversal
-            try:
-                trav, H = self.policy
 
-                # lock nurls deque
-                self.nurlmut.acquire()
+        # Try getting a nurl in a LIFO queue
+        # This means URLs are searched depth-first
+        try:
+            nurl = self.nurls.get()
+        except Empty:
+            return None
 
-                # perform some traversal depending on the policy
-                if trav == "dfs":
-                    # depth-first search
-                    nurl = self.nurls.pop()
-                elif trav == "bfs":
-                    # breadth-first search
-                    nurl = self.nurls.popleft()
-                elif trav == "hybrid":
-                    # hybrid search
-                    # does breadth-first until the first absdepth > H
-                    _top = self.nurls.popleft()
-                    if _top.absdepth <= H:
-                        return top
-                    else:
-                        self.nurls.appendleft(nurl) # add back top
-                        nurl = self.nurls.pop()
-            except IndexError:
-                # nurls must be empty
-                return None
-            finally:
-                # unlock nurls deque
-                self.nurlmut.release()
+        # check status
+        # ignore status codes {0x1, 0x2}
+        # these converge to the nurl downloading (which isn't ideal)
+        with self.nap.mutex:
+            # note: nurls are cached
+            # fetch the actual nurl data, which is
+            # guaranteed to exist because of add_nurl
+            # if un-downloaded, update status and return the nurl
+            nurl = self.nap[nurl.url]
+            if nurl.status == 0x0:
+                nurl.status = 0x1 # in-use
+                self.nap[nurl.url] = nurl
+                return nurl
 
-            # check status
-            # ignore status codes {0x1, 0x2}
-            # these converge to the nurl downloading (which isn't ideal)
-            with self.nap.mutex:
-                # note: nurls are cached
-                # fetch the actual nurl data, which is
-                # guaranteed to exist because of add_nurl
-                # if un-downloaded, update status and return the nurl
-                nurl = self.nap[nurl.url]
-                if nurl.status == 0x0:
-                    nurl.status = 0x1 # in-use
-                    self.nap[nurl.url] = nurl
-                    return nurl
 
     def get_domain_info(self, url):
         """Gets the domain information for the URL. If the domain

@@ -65,6 +65,7 @@ class Worker(Thread):
             ok, pmut = worker_get_domain_info(self, nurl)
             if ok == E_BAD:
                 self.frontier.mark_nurl_complete(nurl)
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but was rejected by robots.txt "
@@ -77,6 +78,7 @@ class Worker(Thread):
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=self.frontier.use_cache)
             if ok == E_AGAIN:
                 self.frontier.add_nurl(nurl)
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but response was None, and should try again later... "
@@ -84,6 +86,7 @@ class Worker(Thread):
                 _flush_nurl(nurl, self.file)
                 continue
             if ok != E_OK:
+                self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
                     f"but was skipped... "
@@ -93,6 +96,7 @@ class Worker(Thread):
 
             # Pipe: filter response
             if not worker_filter_resp_pre(self, nurl, resp):
+                self.frontier.nurls.task_done()
                 self.frontier.mark_nurl_complete(nurl)
                 self.logger.info(
                     f"Downloaded {nurl.url}, "
@@ -107,6 +111,7 @@ class Worker(Thread):
             if not scraper.is_sitemap(resp):
                 tokens, words = scraper.process_text(resp)
                 if not worker_filter_resp_post_text(self, nurl, words):
+                    self.frontier.nurls.task_done()
                     self.frontier.mark_nurl_complete(nurl)
                     self.logger.info(
                         f"Downloaded {nurl.url}, "
@@ -124,6 +129,7 @@ class Worker(Thread):
             # Then mark nurl as complete
             for chld in sifted_nurls:
                 self.frontier.add_nurl(chld)
+            self.frontier.nurls.task_done()
             self.frontier.mark_nurl_complete(nurl)
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
