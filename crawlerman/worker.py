@@ -3,7 +3,7 @@
 # manual version of crawler2/worker.py
 
 from threading import Thread
-from crawler2.worker import *
+from crawler2.workerpipe import *
 
 
 def _flush_nurl(nurl, file):
@@ -77,7 +77,7 @@ class Worker(Thread):
 
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
-            if ok == E_BAD:
+            if ok == PIPE_BAD:
                 self.frontier.mark_nurl_complete(nurl)
                 self.frontier.nurls.task_done()
                 self.logger.info(
@@ -90,7 +90,7 @@ class Worker(Thread):
 
             # Pipe: get response
             ok, resp = worker_get_resp(self, nurl, pmut, use_cache=self.frontier.use_cache)
-            if ok == E_AGAIN:
+            if ok == PIPE_AGAIN:
                 self.frontier.add_nurl(nurl)
                 self.frontier.nurls.task_done()
                 self.logger.info(
@@ -99,7 +99,7 @@ class Worker(Thread):
                 )
                 _flush_nurl(nurl, self.file)
                 continue
-            if ok != E_OK:
+            if ok != PIPE_OK:
                 self.frontier.nurls.task_done()
                 self.logger.info(
                     f"Tried to download {nurl.url}, "
