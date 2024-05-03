@@ -4,7 +4,7 @@
 
 from threading import Thread
 from crawler2.workerpipe import *
-
+from utils import get_logger
 
 def _flush_nurl(nurl, file):
     print("=" * 20,file=file)

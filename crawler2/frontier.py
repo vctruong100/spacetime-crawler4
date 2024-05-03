@@ -80,7 +80,7 @@ class Frontier(object):
 
         # Append nurl to deque
         with self.nurlmut:
-            self.nurls.append(nurl)
+            self.nurls.put(nurl)
 
 
     def get_tbd_nurl(self):
