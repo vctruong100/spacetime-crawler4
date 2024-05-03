@@ -266,9 +266,9 @@ def worker_filter_resp_post_text(w, nurl, words):
                 similar_bucket[1].append(nurl.hash)
                 nurl.finish = NURL_FINISH_TOO_SIMILAR
                 return False
-            else:
-                # make new bucket
-                nap.smdict[raw_hash] = [nurl.hash, []]
+
+        # Make new bucket since no similar pages were found
+        nap.smdict[raw_hash] = [nurl.hash, []]
 
     return True
 
