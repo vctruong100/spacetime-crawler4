@@ -24,7 +24,9 @@ NURL_FINISH_TOO_EXACT = 0x4
 NURL_FINISH_TOO_SIMILAR = 0x5
 NURL_FINISH_NOT_ALLOWED = 0x6
 NURL_FINISH_REDIRECT = 0x7
+NURL_FINISH_SIFTED = 0x8
 NURL_FINISH_CACHE_ERROR = 0xFF
+
 
 def _compute_rel_dirdepth(child, parent):
     """Checks if the child URL is below the parent URL.

@@ -61,6 +61,20 @@ class Worker(Thread):
                 f"Fetched {nurl.url}"
             )
 
+            # Pipe: sift URL before considering it
+            if not worker_sift_nurl(self, nurl):
+                # Do not mark URLs as complete in case the crawler changes its mind
+                # Instead, skip the URL entirely, but mark it as sifted
+                self.frontier.mark_nurl_complete(nurl, status=NURL_STATUS_NO_DOWN)
+                self.frontier.nurls.task_done()
+                self.logger.info(
+                    f"Tried to fetch {nurl.url}, "
+                    f"but was sifted "
+                    f"(finish={nurl.finish})"
+                )
+                _flush_nurl(nurl, self.file)
+                continue
+
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
             if ok == E_BAD:
@@ -121,20 +135,20 @@ class Worker(Thread):
                     _flush_nurl(nurl, self.file)
                     continue
 
-            # Pipe: scrape/extract valid URLs and transform to nurls
+            # Pipe: scrape valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp, strict=False)
-            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
+            transformed_nurls = worker_transform_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
-            for chld in sifted_nurls:
+            for chld in transformed_nurls:
                 self.frontier.add_nurl(chld)
             self.frontier.nurls.task_done()
             self.frontier.mark_nurl_complete(nurl)
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
                 f"(filter='ok',finish={nurl.finish}"
-                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap(resp)})"
+                f",scraped={len(transformed_nurls)},sitemap={scraper.is_sitemap(resp)})"
             )
             _flush_nurl(nurl, self.file)
 

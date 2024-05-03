@@ -47,9 +47,27 @@ MIN_UNIQUE_WORDS = 5
 
 
 def _assert_no_requests():
-    # basic check for requests in scraper3
+    # basic check for requests in scraper2
     assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper2.py"
     assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper2.py"
+
+
+def worker_sift_nurl(w, nurl):
+    """Sifts the nurl through certain depth checks.
+    If the nurl does not pass the depth check, the nurl is skipped,
+    but not marked as downloaded. This means the crawler might choose
+    to download the nurl again on next launch.
+    """
+    # Filter nurl by depths
+    if (chld.absdepth > MAX_ABSDEPTH
+        or chld.reldepth > MAX_RELDEPTH
+        or chld.monodepth > MAX_MONODEPTH
+        or chld.dupdepth > MAX_DUPDEPTH):
+        nurl.finish = NURL_FINISH_SIFTED
+        return False
+
+    return True
+
 
 
 def worker_get_domain_info(w, nurl):
@@ -63,7 +81,6 @@ def worker_get_domain_info(w, nurl):
     :rtype: PoliteMutex
 
     """
-
     # Get domain info from frontier if it exists
     domain_info = w.frontier.get_domain_info(nurl.url)
     pmut = domain_info['polmut']
@@ -273,31 +290,24 @@ def worker_filter_resp_post_text(w, nurl, words):
     return True
 
 
-def worker_sift_urls(w, nurl, scraped_urls):
-    """Sifts through the scraped / extracted URLs, and transforms them to Nurls.
+def worker_transform_urls(w, nurl, scraped_urls):
+    """For each extracted URL, transforms it into a Nurl.
+    This sets the parent of each child Nurl.
     This should be called after extracting the URLs from the nurl.
 
     :param w Worker: The worker thread
     :param nurl Nurl: The nurl itself
     :param scraped_urls list[str]: A list of extracted URL strings
-    :return: A list of nurls after it was sifted and transformed
+    :return: A list of nurls after it was transformed
     :rtype: list[Nurl]
 
     """
-    logger = w.logger
-    sifted_nurls = []
+    transformed_nurls = []
 
-    # Transform each URLs to nurls and filter before "sifting"
+    # Transform each URL to a nurl
     for url in scraped_urls:
         chld = Nurl(url)
         chld.set_parent(nurl)
-
-        # Filter nurl by depths
-        if (chld.absdepth > MAX_ABSDEPTH
-            or chld.reldepth > MAX_RELDEPTH
-            or chld.monodepth > MAX_MONODEPTH
-            or chld.dupdepth > MAX_DUPDEPTH):
-            continue
 
         # Append nurl hash to parent nurl links
         nurl.links.append(chld.hash)
@@ -305,7 +315,7 @@ def worker_sift_urls(w, nurl, scraped_urls):
         # Append to sifted nurls
         sifted_nurls.append(chld)
 
-    return sifted_nurls
+    return transformed_nurls
 
 
 class Worker(Thread):
@@ -328,6 +338,19 @@ class Worker(Thread):
             self.logger.info(
                 f"Fetched {nurl.url}"
             )
+
+            # Pipe: sift URL before considering it
+            if not worker_sift_nurl(self, nurl):
+                # Do not mark URLs as complete in case the crawler changes its mind
+                # Instead, skip the URL entirely, but mark it as sifted
+                self.frontier.mark_nurl_complete(nurl, status=NURL_STATUS_NO_DOWN)
+                self.frontier.nurls.task_done()
+                self.logger.info(
+                    f"Tried to fetch {nurl.url}, "
+                    f"but was sifted "
+                    f"(finish={nurl.finish})"
+                )
+                continue
 
             # Pipe: get domain info
             ok, pmut = worker_get_domain_info(self, nurl)
@@ -384,19 +407,19 @@ class Worker(Thread):
                     )
                     continue
 
-            # Pipe: scrape/extract valid URLs and transform to nurls
+            # Pipe: scrape valid URLs and transform to nurls
             scraped_urls = scraper.scraper(resp)
-            sifted_nurls = worker_sift_urls(self, nurl, scraped_urls)
+            transformed_nurls = worker_transform_urls(self, nurl, scraped_urls)
 
             # Add nurls to frontier
             # Then mark nurl as complete
-            for chld in sifted_nurls:
+            for chld in transformed_nurls:
                 self.frontier.add_nurl(chld)
             self.frontier.mark_nurl_complete(nurl)
             self.frontier.nurls.task_done()
             self.logger.info(
                 f"Successfully downloaded {nurl.url} "
                 f"(filter='ok',finish={nurl.finish}"
-                f",scraped={len(sifted_nurls)},sitemap={scraper.is_sitemap(resp)})"
+                f",scraped={len(transformed_nurls)},sitemap={scraper.is_sitemap(resp)})"
             )
 
