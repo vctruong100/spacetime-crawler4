@@ -5,7 +5,7 @@
 # if they wish to operate with the pipeline
 
 from helpers.exhash import exhash
-from helpers.simhash import simhash
+from helpers.simhash import *
 from crawler2.download import download
 from crawler2.nurl import *
 import scraper2 as scraper
