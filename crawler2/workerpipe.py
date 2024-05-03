@@ -47,10 +47,10 @@ def worker_sift_nurl(w, nurl):
     to download the nurl again on next launch.
     """
     # Filter nurl by depths
-    if (chld.absdepth > MAX_ABSDEPTH
-        or chld.reldepth > MAX_RELDEPTH
-        or chld.monodepth > MAX_MONODEPTH
-        or chld.dupdepth > MAX_DUPDEPTH):
+    if (nurl.absdepth > MAX_ABSDEPTH
+        or nurl.reldepth > MAX_RELDEPTH
+        or nurl.monodepth > MAX_MONODEPTH
+        or nurl.dupdepth > MAX_DUPDEPTH):
         nurl.finish = NURL_FINISH_SIFTED
         return False
 
@@ -77,9 +77,9 @@ def worker_get_domain_info(w, nurl):
     # Check robots.txt
     if not rparser.can_fetch(w.config.user_agent, nurl.url):
         nurl.finish = NURL_FINISH_NOT_ALLOWED
-        return (E_BAD, None) # Skip urls disallowed by robots.txt
+        return (PIPE_BAD, None) # Skip urls disallowed by robots.txt
 
-    return (E_OK, pmut)
+    return (PIPE_OK, pmut)
 
 
 def worker_get_resp(w, nurl, pmut=None, use_cache=True):
@@ -121,7 +121,7 @@ def worker_get_resp(w, nurl, pmut=None, use_cache=True):
         # If retries exceeded or response is not a server error, stop trying
         if (retries >= MAX_RETRIES
             or resp.status not in range(500, 512)):
-            return (E_OK if resp else E_AGAIN, resp)
+            return (PIPE_OK if resp else PIPE_AGAIN, resp)
 
         # Wait and increment retries
         time.sleep(RETRY_DELAY[retries])
@@ -301,7 +301,7 @@ def worker_transform_urls(w, nurl, scraped_urls):
         nurl.links.append(chld.hash)
 
         # Append to sifted nurls
-        sifted_nurls.append(chld)
+        transformed_nurls.append(chld)
 
     return transformed_nurls
 
