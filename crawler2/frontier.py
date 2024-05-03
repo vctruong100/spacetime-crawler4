@@ -6,7 +6,7 @@
 
 from crawler2.polmut import PoliteMutex
 from crawler2.nap import Nap
-from crawler2.nurl import Nurl
+from crawler2.nurl import *
 from crawler2.robots import robots
 from utils import get_logger
 
@@ -70,7 +70,7 @@ class Frontier(object):
         :param nurl Nurl: The nurl object
         """
         # Already downloaded
-        if nurl.status == 0x2:
+        if nurl.status == NURL_STATUS_IS_DOWN:
             return
 
 	    # Add nurl to nap iff it doesn't exist
@@ -101,7 +101,7 @@ class Frontier(object):
             return None
 
         # check status
-        # ignore status codes {0x1, 0x2}
+        # ignore status codes {NURL_STATUS_IN_USE, NURL_STATUS_IS_DOWN}
         # these converge to the nurl downloading (which isn't ideal)
         with self.nap.mutex:
             # note: nurls are cached
@@ -109,8 +109,8 @@ class Frontier(object):
             # guaranteed to exist because of add_nurl
             # if un-downloaded, update status and return the nurl
             nurl = self.nap[nurl.url]
-            if nurl.status == 0x0:
-                nurl.status = 0x1 # in-use
+            if nurl.status == NURL_STATUS_NO_DOWN:
+                nurl.status = NURL_STATUS_IN_USE # in-use
                 self.nap[nurl.url] = nurl
                 return nurl
 
@@ -176,14 +176,15 @@ class Frontier(object):
         return self.domains[base_url]
 
 
-    def mark_nurl_complete(self, nurl):
+    def mark_nurl_complete(self, nurl, status=NURL_STATUS_IS_DOWN):
         """Marks the nurl as complete.
         Stops the crawler from re-downloading the URL.
         Only call this after the nurl has recomputed its attributes.
+        If status is defined, then sets the nurl status to the specified status code instead.
 
         :param nurl Nurl: The nurl object
         """
-        nurl.status = 0x2 # downloaded
+        nurl.status = status # downloaded OR user-defined status code
         with self.nap.mutex:
             self.nap[nurl.url] = nurl
 
@@ -193,8 +194,6 @@ class Frontier(object):
         Deletes any associated files with saving if restart=True.
         """
         _save_file = self.config.save_file
-        _robocache_file = f"{_save_file}.robocache"
-
         _save_file_exists = os.path.exists(_save_file)
         if not restart and not _save_file_exists:
             # Save file does not exist, but request to load save
@@ -221,11 +220,11 @@ class Frontier(object):
             with self.nap.mutex:
                 nurl = self.nap[url]
                 # remove intermediate state
-                if nurl.status == 0x1:
-                    nurl.status = 0x0
+                if nurl.status == NURL_STATUS_IN_USE:
+                    nurl.status = NURL_STATUS_NO_DOWN
                     self.nap[url] = nurl
                 # not yet downloaded
-                if nurl.status == 0x0:
+                if nurl.status == NURL_STATUS_NO_DOWN:
                     self.add_nurl(nurl)
 
         # Add remaining nurls found in save file
@@ -233,10 +232,10 @@ class Frontier(object):
             for dic in self.nap.dict.values():
                 nurl = Nurl.from_dict(dic)
                 # remove intermediate state
-                if nurl.status == 0x1:
-                    nurl.status = 0x0
+                if nurl.status == NURL_STATUS_IN_USE:
+                    nurl.status = NURL_STATUS_NO_DOWN
                     self.nap[nurl.url] = nurl
                 # not yet downloaded
-                if nurl.status == 0x0:
+                if nurl.status == NURL_STATUS_NO_DOWN:
                     self.add_nurl(nurl)
 
