@@ -55,7 +55,6 @@ def main(napfile):
             errors += 1
 
     print("Total Number of URLs downloaded:", total_urls)
-    print("Total Number of Unique pages successfully downloaded:", unique_pages)
     print("Total number of errors:", errors)
 
     print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
