@@ -41,7 +41,7 @@ def main(napfile):
 
             # Count the total number of words in the page
             words = data['words']
-            total_words = sum(words.values())
+            total_words = sum(count for word, count in words.items() if is_valid_word(word))
 
             # if this page has more words than the current longest page, update it
             if total_words > longest_page[1]:
@@ -49,7 +49,7 @@ def main(napfile):
 
             # filter out stopwords and short words and increment count in global word count
             for word, count in words.items():
-                if is_valid_word(word) and not is_stopword(word):
+                if is_valid_word(word):
                     wc[word] = wc.get(word, 0) + count
 
         if data['finish'] in {NURL_FINISH_NOT_ALLOWED, NURL_FINISH_BAD, NURL_FINISH_CACHE_ERROR}:
