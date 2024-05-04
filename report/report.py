@@ -4,10 +4,9 @@
 
 import sys
 from crawler2.nap import Nap
-from crawler2.nurl import NURL_FINISH_TOO_EXACT, NURL_FINISH_TOO_SIMILAR, NURL_FINISH_OK, NURL_STATUS_IS_DOWN
+from crawler2.nurl import *
 from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
-from helpers.word_count import word_count, to_tokens
 from urllib.parse import urlparse
 
 def is_valid_word(word):
@@ -53,26 +52,28 @@ def main(napfile):
                 if is_valid_word(word) and not is_stopword(word):
                     wc[word] = wc.get(word, 0) + count
 
-        if data['finish'] != NURL_FINISH_OK:
+        if data['finish'] in {NURL_FINISH_NOT_ALLOWED, NURL_FINISH_BAD, NURL_FINISH_CACHE_ERROR}:
             errors += 1
 
     print("Total Number of URLs Found:", total_urls)
     print("Total number of downloads:", total_downloads)
-    print("Total number of errors:", errors)
-    print("Total number of unique subdomains:", len(subdomains))
-
-    print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
-    sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[1], reverse=True)
-    for subdomain, count in sorted_subdomains:
-        print(subdomain, count)
+    print("\nLongest page by word count:")
+    print("URL:", longest_page[0])
+    print("Word count:", longest_page[1])
 
     print("\nTop 50 common words:")
     for word in common_words(wc, 50):
         print(word, wc[word])
 
-    print("\nLongest page by word count:")
-    print("URL:", longest_page[0])
-    print("Word count:", longest_page[1])
+    print("\nTotal number of unique subdomains:", len(subdomains))
+
+    print("\nPrinting subdomains in the ics.uci.edu domain, with unique page counts: ")
+    sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[1], reverse=True)
+    for subdomain, count in sorted_subdomains:
+        print(subdomain, count)
+
+    print("\nTotal number of errors:", errors)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
