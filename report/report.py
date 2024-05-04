@@ -4,7 +4,7 @@
 
 import sys
 from crawler2.nap import Nap
-from crawler2.nurl import NURL_FINISH_TOO_EXACT, NURL_FINISH_TOO_SIMILAR, NURL_FINISH_OK
+from crawler2.nurl import NURL_FINISH_TOO_EXACT, NURL_FINISH_TOO_SIMILAR, NURL_FINISH_OK, NURL_STATUS_IS_DOWN
 from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
 from helpers.word_count import word_count, to_tokens
@@ -16,6 +16,7 @@ def is_valid_word(word):
 def main(napfile):
     nap = Nap(napfile)
     total_urls = len(nap.dict)
+    total_downloads = 0
     subdomains = {}
     wc = {}
     errors = 0
@@ -31,6 +32,10 @@ def main(napfile):
                 subdomains[hostname] += 1
             else:
                 subdomains[hostname] = 1
+
+        # Count the number of pages that are downloaded
+        if data['status'] == NURL_STATUS_IS_DOWN:
+            total_downloads += 1
 
         # Only process pages that are not too similar or exact duplicates
         if data['finish'] not in {NURL_FINISH_TOO_SIMILAR, NURL_FINISH_TOO_EXACT}:
@@ -54,7 +59,8 @@ def main(napfile):
         if data['finish'] != NURL_FINISH_OK:
             errors += 1
 
-    print("Total Number of URLs downloaded:", total_urls)
+    print("Total Number of URLs Found:", total_urls)
+    print("Total number of downloads:", total_downloads)
     print("Total number of errors:", errors)
 
     print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
