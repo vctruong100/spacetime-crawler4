@@ -75,14 +75,14 @@ def main(napfile):
 
     print("\nTop 50 common words:")
     for word in common_words(wc, 50):
-        print(word, wc[word])
+        print(f"{word} = {wc[word]}")
 
     print("\nTotal number of unique subdomains:", len(subdomains))
 
     print("\nPrinting subdomains in the ics.uci.edu domain, with unique page counts: ")
     sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[0], reverse=False)
     for subdomain, count in sorted_subdomains:
-        print(subdomain, count)
+        print(f"{subdomain}, {count}")
 
     print("\nTotal number of errors:", errors)
     print("Total number of pages that are too similar:", spages)

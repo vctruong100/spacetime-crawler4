@@ -6,195 +6,195 @@ URL: https://grape.ics.uci.edu/wiki/public/raw-attachment/wiki/cs221-2019-spring
 Word count: 59249
 
 Top 50 common words:
-research 26653
-data 22189
-computer 20594
-information 17918
-uci 15007
-will 14872
-science 14236
-students 14059
-ics 12993
-can 11886
-contact 11788
-news 11787
-school 11593
-html 11489
-events 11281
-update 10809
-bren 10620
-student 10083
-software 9980
-learning 9974
-automatic 9632
-new 9562
-university 9136
-computing 9124
-support 9014
-graduate 8874
-systems 8658
-may 8195
-policies 8162
-set 8095
-faculty 8055
-people 8035
-irvine 8009
-one 7628
-current 7476
-time 7422
-search 7420
-design 7308
-projects 7187
-engineering 7123
-undergraduate 7015
-code 6904
-department 6851
-september 6768
-course 6652
-also 6466
-informatics 6356
-machine 6293
-using 6121
-use 6104
+research = 26653
+data = 22189
+computer = 20594
+information = 17918
+uci = 15007
+will = 14872
+science = 14236
+students = 14059
+ics = 12993
+can = 11886
+contact = 11788
+news = 11787
+school = 11593
+html = 11489
+events = 11281
+update = 10809
+bren = 10620
+student = 10083
+software = 9980
+learning = 9974
+automatic = 9632
+new = 9562
+university = 9136
+computing = 9124
+support = 9014
+graduate = 8874
+systems = 8658
+may = 8195
+policies = 8162
+set = 8095
+faculty = 8055
+people = 8035
+irvine = 8009
+one = 7628
+current = 7476
+time = 7422
+search = 7420
+design = 7308
+projects = 7187
+engineering = 7123
+undergraduate = 7015
+code = 6904
+department = 6851
+september = 6768
+course = 6652
+also = 6466
+informatics = 6356
+machine = 6293
+using = 6121
+use = 6104
 
 Total number of unique subdomains: 135
 
 Printing subdomains in the ics.uci.edu domain, with unique page counts: 
-accessibility.ics.uci.edu 6
-acoi.ics.uci.edu 99
-aiclub.ics.uci.edu 2
-archive-beta.ics.uci.edu 3
-archive.ics.uci.edu 1838
-asterix.ics.uci.edu 10
-asterixdb.ics.uci.edu 3
-auge.ics.uci.edu 2
-calendar.ics.uci.edu 1
-cbcl.ics.uci.edu 495
-cert.ics.uci.edu 11
-cgvw.ics.uci.edu 1
-checkin.ics.uci.edu 2
-checkmate.ics.uci.edu 1
-chenli.ics.uci.edu 20
-cherry.ics.uci.edu 1
-chime.ics.uci.edu 1
-cloudberry.ics.uci.edu 3
-cml.ics.uci.edu 159
-code.ics.uci.edu 27
-computableplant.ics.uci.edu 99
-containers.ics.uci.edu 1
-coronavirustwittermap.ics.uci.edu 1
-create.ics.uci.edu 25
-cwicsocal18.ics.uci.edu 15
-cyberclub.ics.uci.edu 15
-dblp.ics.uci.edu 2
-dgillen.ics.uci.edu 32
-duttgroup.ics.uci.edu 112
-dynamo.ics.uci.edu 1
-elms.ics.uci.edu 1
-emj.ics.uci.edu 46
-esl.ics.uci.edu 7
-evoke.ics.uci.edu 7
-fano.ics.uci.edu 1
-flamingo.ics.uci.edu 42
-fr.ics.uci.edu 9
-futurehealth.ics.uci.edu 100
-gitlab.ics.uci.edu 365
-grafana-infra-blue.ics.uci.edu 1
-grape.ics.uci.edu 1367
-graphics.ics.uci.edu 5
-graphmod.ics.uci.edu 15
-hack.ics.uci.edu 1
-hai.ics.uci.edu 5
-hana.ics.uci.edu 3
-helpdesk.ics.uci.edu 3
-hobbes.ics.uci.edu 10
-hombao.ics.uci.edu 1
-honors.ics.uci.edu 1
-hpi.ics.uci.edu 14
-hub.ics.uci.edu 3
-i-sensorium.ics.uci.edu 6
-iasl.ics.uci.edu 23
-industryshowcase.ics.uci.edu 33
-informatics.ics.uci.edu 2
-informatics.mt-live.ics.uci.edu 1
-instdav.ics.uci.edu 1
-intranet.ics.uci.edu 1
-ipf.ics.uci.edu 13
-ipubmed.ics.uci.edu 5
-isg.ics.uci.edu 278
-jgarcia.ics.uci.edu 20
-jujube.ics.uci.edu 2
-kdd.ics.uci.edu 2
-lolth.ics.uci.edu 1
-luci.ics.uci.edu 23
-mailman.ics.uci.edu 7
-malek.ics.uci.edu 1
-map125.ics.uci.edu 1
-mapgrid.ics.uci.edu 2
-mcs.ics.uci.edu 84
-mdogucu.ics.uci.edu 1
-mds.ics.uci.edu 19
-metaviz.ics.uci.edu 1
-mhcid.ics.uci.edu 18
-motifmap-rna.ics.uci.edu 2
-motifmap.ics.uci.edu 2
-mse.ics.uci.edu 3
-mswe.ics.uci.edu 37
-mt-live.ics.uci.edu 1
-nalini.ics.uci.edu 18
-ngs.ics.uci.edu 1237
-omni.ics.uci.edu 1
-onboarding.ics.uci.edu 1
-password.ics.uci.edu 1
-pastebin.ics.uci.edu 1
-pasteur.ics.uci.edu 2
-pgadmin.ics.uci.edu 1
-phpmyadmin.ics.uci.edu 1
-plrg.ics.uci.edu 95
-prometheus-infra-blue.ics.uci.edu 1
-psearch.ics.uci.edu 4
-radicle.ics.uci.edu 1
-redmiles.ics.uci.edu 12
-riscit.ics.uci.edu 3
-rstudio-hub.ics.uci.edu 2
-satware.ics.uci.edu 1
-scale.ics.uci.edu 1
-sconce.ics.uci.edu 1
-sdcl.ics.uci.edu 240
-seal.ics.uci.edu 6
-seraja.ics.uci.edu 1
-sherlock.ics.uci.edu 1
-sli.ics.uci.edu 947
-sourcerer.ics.uci.edu 1
-speedtest.ics.uci.edu 1
-sprout.ics.uci.edu 2
-stairs.ics.uci.edu 4
-statconsulting.ics.uci.edu 1
-student-council.ics.uci.edu 1
-studentcouncil.ics.uci.edu 30
-svn.ics.uci.edu 1
-swiki.ics.uci.edu 1706
-tad.ics.uci.edu 3
-tastier.ics.uci.edu 1
-testlab.ics.uci.edu 5
-tippersweb.ics.uci.edu 4
-transformativeplay.ics.uci.edu 172
-tutors.ics.uci.edu 41
-ugradforms.ics.uci.edu 1
-unite.ics.uci.edu 22
-vision.ics.uci.edu 201
-wearablegames.ics.uci.edu 1
-wics.ics.uci.edu 781
-wiki.ics.uci.edu 12
-www-db.ics.uci.edu 3
-www.cert.ics.uci.edu 1
-www.graphics.ics.uci.edu 7
-www.ics.uci.edu 3828
-www.informatics.ics.uci.edu 1
-www.informatics.uci.edu 406
-www.isg.ics.uci.edu 1
-xtune.ics.uci.edu 6
-yarra.ics.uci.edu 1
+accessibility.ics.uci.edu, 6
+acoi.ics.uci.edu, 99
+aiclub.ics.uci.edu, 2
+archive-beta.ics.uci.edu, 3
+archive.ics.uci.edu, 1838
+asterix.ics.uci.edu, 10
+asterixdb.ics.uci.edu, 3
+auge.ics.uci.edu, 2
+calendar.ics.uci.edu, 1
+cbcl.ics.uci.edu, 495
+cert.ics.uci.edu, 11
+cgvw.ics.uci.edu, 1
+checkin.ics.uci.edu, 2
+checkmate.ics.uci.edu, 1
+chenli.ics.uci.edu, 20
+cherry.ics.uci.edu, 1
+chime.ics.uci.edu, 1
+cloudberry.ics.uci.edu, 3
+cml.ics.uci.edu, 159
+code.ics.uci.edu, 27
+computableplant.ics.uci.edu, 99
+containers.ics.uci.edu, 1
+coronavirustwittermap.ics.uci.edu, 1
+create.ics.uci.edu, 25
+cwicsocal18.ics.uci.edu, 15
+cyberclub.ics.uci.edu, 15
+dblp.ics.uci.edu, 2
+dgillen.ics.uci.edu, 32
+duttgroup.ics.uci.edu, 112
+dynamo.ics.uci.edu, 1
+elms.ics.uci.edu, 1
+emj.ics.uci.edu, 46
+esl.ics.uci.edu, 7
+evoke.ics.uci.edu, 7
+fano.ics.uci.edu, 1
+flamingo.ics.uci.edu, 42
+fr.ics.uci.edu, 9
+futurehealth.ics.uci.edu, 100
+gitlab.ics.uci.edu, 365
+grafana-infra-blue.ics.uci.edu, 1
+grape.ics.uci.edu, 1367
+graphics.ics.uci.edu, 5
+graphmod.ics.uci.edu, 15
+hack.ics.uci.edu, 1
+hai.ics.uci.edu, 5
+hana.ics.uci.edu, 3
+helpdesk.ics.uci.edu, 3
+hobbes.ics.uci.edu, 10
+hombao.ics.uci.edu, 1
+honors.ics.uci.edu, 1
+hpi.ics.uci.edu, 14
+hub.ics.uci.edu, 3
+i-sensorium.ics.uci.edu, 6
+iasl.ics.uci.edu, 23
+industryshowcase.ics.uci.edu, 33
+informatics.ics.uci.edu, 2
+informatics.mt-live.ics.uci.edu, 1
+instdav.ics.uci.edu, 1
+intranet.ics.uci.edu, 1
+ipf.ics.uci.edu, 13
+ipubmed.ics.uci.edu, 5
+isg.ics.uci.edu, 278
+jgarcia.ics.uci.edu, 20
+jujube.ics.uci.edu, 2
+kdd.ics.uci.edu, 2
+lolth.ics.uci.edu, 1
+luci.ics.uci.edu, 23
+mailman.ics.uci.edu, 7
+malek.ics.uci.edu, 1
+map125.ics.uci.edu, 1
+mapgrid.ics.uci.edu, 2
+mcs.ics.uci.edu, 84
+mdogucu.ics.uci.edu, 1
+mds.ics.uci.edu, 19
+metaviz.ics.uci.edu, 1
+mhcid.ics.uci.edu, 18
+motifmap-rna.ics.uci.edu, 2
+motifmap.ics.uci.edu, 2
+mse.ics.uci.edu, 3
+mswe.ics.uci.edu, 37
+mt-live.ics.uci.edu, 1
+nalini.ics.uci.edu, 18
+ngs.ics.uci.edu, 1237
+omni.ics.uci.edu, 1
+onboarding.ics.uci.edu, 1
+password.ics.uci.edu, 1
+pastebin.ics.uci.edu, 1
+pasteur.ics.uci.edu, 2
+pgadmin.ics.uci.edu, 1
+phpmyadmin.ics.uci.edu, 1
+plrg.ics.uci.edu, 95
+prometheus-infra-blue.ics.uci.edu, 1
+psearch.ics.uci.edu, 4
+radicle.ics.uci.edu, 1
+redmiles.ics.uci.edu, 12
+riscit.ics.uci.edu, 3
+rstudio-hub.ics.uci.edu, 2
+satware.ics.uci.edu, 1
+scale.ics.uci.edu, 1
+sconce.ics.uci.edu, 1
+sdcl.ics.uci.edu, 240
+seal.ics.uci.edu, 6
+seraja.ics.uci.edu, 1
+sherlock.ics.uci.edu, 1
+sli.ics.uci.edu, 947
+sourcerer.ics.uci.edu, 1
+speedtest.ics.uci.edu, 1
+sprout.ics.uci.edu, 2
+stairs.ics.uci.edu, 4
+statconsulting.ics.uci.edu, 1
+student-council.ics.uci.edu, 1
+studentcouncil.ics.uci.edu, 30
+svn.ics.uci.edu, 1
+swiki.ics.uci.edu, 1706
+tad.ics.uci.edu, 3
+tastier.ics.uci.edu, 1
+testlab.ics.uci.edu, 5
+tippersweb.ics.uci.edu, 4
+transformativeplay.ics.uci.edu, 172
+tutors.ics.uci.edu, 41
+ugradforms.ics.uci.edu, 1
+unite.ics.uci.edu, 22
+vision.ics.uci.edu, 201
+wearablegames.ics.uci.edu, 1
+wics.ics.uci.edu, 781
+wiki.ics.uci.edu, 12
+www-db.ics.uci.edu, 3
+www.cert.ics.uci.edu, 1
+www.graphics.ics.uci.edu, 7
+www.ics.uci.edu, 3828
+www.informatics.ics.uci.edu, 1
+www.informatics.uci.edu, 406
+www.isg.ics.uci.edu, 1
+xtune.ics.uci.edu, 6
+yarra.ics.uci.edu, 1
 
 Total number of errors: 3559
 Total number of pages that are too similar: 5567
