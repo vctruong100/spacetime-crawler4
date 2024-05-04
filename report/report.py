@@ -9,8 +9,14 @@ from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
 from urllib.parse import urlparse
 
+
+# these words don't have much information value, so we
+# discard them in our report
+MANUAL_WORD_FILTER = { "markellekelly", "ramesh" }
+
+
 def is_valid_word(word):
-    return len(word) >= 3 and any(c.isalpha() for c in word)
+    return len(word) >= 3 and any(c.isalpha() for c in word) and word not in MANUAL_WORD_FILTER
 
 def main(napfile):
     nap = Nap(napfile)
@@ -26,7 +32,7 @@ def main(napfile):
     for hash, data in nap.dict.items():
         url = data['url']
         parsed_url = urlparse(url)
-        hostname = parsed_url.hostname
+        hostname = f"{parsed_url.hostname}"
 
         if hostname and hostname.endswith('ics.uci.edu'):
             if hostname in subdomains:
@@ -38,21 +44,19 @@ def main(napfile):
         if data['status'] == NURL_STATUS_IS_DOWN:
             total_downloads += 1
 
-        # Only process pages that are not too similar or exact duplicates
-        if data['finish'] not in {NURL_FINISH_TOO_SIMILAR, NURL_FINISH_TOO_EXACT}:
 
-            # Count the total number of words in the page
-            words = data['words']
-            total_words = sum(count for word, count in words.items() if is_valid_word(word))
+        # Count the total number of words in the page
+        words = data['words']
+        total_words = sum(count for word, count in words.items() if is_valid_word(word))
 
-            # if this page has more words than the current longest page, update it
-            if total_words > longest_page[1]:
-                longest_page = (url, total_words)
+        # if this page has more words than the current longest page, update it
+        if total_words > longest_page[1]:
+            longest_page = (url, total_words)
 
-            # filter out stopwords and short words and increment count in global word count
-            for word, count in words.items():
-                if is_valid_word(word):
-                    wc[word] = wc.get(word, 0) + count
+        # filter out stopwords and short words and increment count in global word count
+        for word, count in words.items():
+            if is_valid_word(word):
+                wc[word] = wc.get(word, 0) + count
 
         if data['finish'] in {NURL_FINISH_NOT_ALLOWED, NURL_FINISH_BAD, NURL_FINISH_CACHE_ERROR}:
             errors += 1
@@ -76,7 +80,7 @@ def main(napfile):
     print("\nTotal number of unique subdomains:", len(subdomains))
 
     print("\nPrinting subdomains in the ics.uci.edu domain, with unique page counts: ")
-    sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[1], reverse=True)
+    sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[0], reverse=False)
     for subdomain, count in sorted_subdomains:
         print(subdomain, count)
 
