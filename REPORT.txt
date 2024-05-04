@@ -57,7 +57,7 @@ machine = 6293
 using = 6121
 use = 6104
 
-Total number of unique subdomains: 135
+Total number of unique subdomains: 134
 
 Printing subdomains in the ics.uci.edu domain, with unique page counts: 
 accessibility.ics.uci.edu, 6
@@ -191,7 +191,6 @@ www.cert.ics.uci.edu, 1
 www.graphics.ics.uci.edu, 7
 www.ics.uci.edu, 3828
 www.informatics.ics.uci.edu, 1
-www.informatics.uci.edu, 406
 www.isg.ics.uci.edu, 1
 xtune.ics.uci.edu, 6
 yarra.ics.uci.edu, 1

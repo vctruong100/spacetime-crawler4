@@ -34,7 +34,7 @@ def main(napfile):
         parsed_url = urlparse(url)
         hostname = f"{parsed_url.hostname}"
 
-        if hostname and hostname.endswith('ics.uci.edu'):
+        if hostname and hostname.endswith('.ics.uci.edu'):
             if hostname in subdomains:
                 subdomains[hostname] += 1
             else:
