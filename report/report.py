@@ -20,6 +20,8 @@ def main(napfile):
     wc = {}
     errors = 0
     longest_page = ('', 0)  # URL and length
+    spages = 0
+    epages = 0
 
     for hash, data in nap.dict.items():
         url = data['url']
@@ -55,6 +57,12 @@ def main(napfile):
         if data['finish'] in {NURL_FINISH_NOT_ALLOWED, NURL_FINISH_BAD, NURL_FINISH_CACHE_ERROR}:
             errors += 1
 
+        if data['finish'] == NURL_FINISH_TOO_SIMILAR:
+            spages += 1
+
+        if data['finish'] == NURL_FINISH_TOO_EXACT:
+            epages += 1
+
     print("Total Number of URLs Found:", total_urls)
     print("Total number of downloads:", total_downloads)
     print("\nLongest page by word count:")
@@ -73,7 +81,8 @@ def main(napfile):
         print(subdomain, count)
 
     print("\nTotal number of errors:", errors)
-
+    print("Total number of pages that are too similar:", spages)
+    print("Total number of pages that are exact duplicates:", epages)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
