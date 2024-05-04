@@ -60,8 +60,10 @@ def main(napfile):
     print("Total number of downloads:", total_downloads)
     print("Total number of errors:", errors)
     print("Total number of unique subdomains:", len(subdomains))
+
     print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
-    for subdomain, count in subdomains.items():
+    sorted_subdomains = sorted(subdomains.items(), key=lambda item: item[1], reverse=True)
+    for subdomain, count in sorted_subdomains:
         print(subdomain, count)
 
     print("\nTop 50 common words:")
