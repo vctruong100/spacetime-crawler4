@@ -48,10 +48,6 @@ def main(napfile):
             if total_words > longest_page[1]:
                 longest_page = (url, total_words)
 
-            # convert the words to tokens and count the frequency of each word
-            tokens = to_tokens([text for text in data['words'].keys()])
-            page_word_counts = word_count(tokens)
-
             # filter out stopwords and short words and increment count in global word count
             for word, count in words.items():
                 if is_valid_word(word) and not is_stopword(word):
