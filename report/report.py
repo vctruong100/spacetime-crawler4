@@ -41,19 +41,20 @@ def main(napfile):
         if data['finish'] not in {NURL_FINISH_TOO_SIMILAR, NURL_FINISH_TOO_EXACT}:
 
             # Count the total number of words in the page
-            words = sum(data['words'].values())
+            words = data['words']
+            total_words = sum(words.values())
 
             # if this page has more words than the current longest page, update it
-            if words > longest_page[1]:
-                longest_page = (url, words)
+            if total_words > longest_page[1]:
+                longest_page = (url, total_words)
 
             # convert the words to tokens and count the frequency of each word
             tokens = to_tokens([text for text in data['words'].keys()])
             page_word_counts = word_count(tokens)
 
             # filter out stopwords and short words and increment count in global word count
-            for word, count in page_word_counts.items():
-                if len(word) >= 3 and any(c.isalpha() for c in word) and not is_stopword(word):
+            for word, count in words.items():
+                if is_valid_word(word) and not is_stopword(word):
                     wc[word] = wc.get(word, 0) + count
 
         if data['finish'] != NURL_FINISH_OK:
@@ -62,7 +63,7 @@ def main(napfile):
     print("Total Number of URLs Found:", total_urls)
     print("Total number of downloads:", total_downloads)
     print("Total number of errors:", errors)
-
+    print("Total number of unique subdomains:", len(subdomains))
     print("Printing subdomains in the ics.uci.edu domain, with unique page counts: ")
     for subdomain, count in subdomains.items():
         print(subdomain, count)
