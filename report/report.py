@@ -4,27 +4,18 @@
 
 import sys
 from crawler2.nap import Nap
-from crawler2.nurl import NURL_STATUS_IS_DOWN, NURL_FINISH_OK
+from crawler2.nurl import NURL_FINISH_TOO_EXACT, NURL_FINISH_TOO_SIMILAR, NURL_FINISH_OK
 from helpers.common_words import common_words
 from helpers.stopwords_set import is_stopword
 from helpers.word_count import word_count, to_tokens
 from urllib.parse import urlparse
 
-def sort_words_by_frequency(word_dict, top_n=50):
-    """Sort words by frequency and return the top N words.
-
-    :param word_dict: A dictionary of words and their frequencies
-    :param top_n: The number of top words to return
-    :return: A list of tuples of the top N words and their frequencies
-    """
-    # Convert dictionary to list of tuples and sort by frequency descending
-    sorted_words = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
-    return sorted_words[:top_n]
+def is_valid_word(word):
+    return len(word) >= 3 and any(c.isalpha() for c in word)
 
 def main(napfile):
     nap = Nap(napfile)
     total_urls = len(nap.dict)
-    unique_pages = 0
     subdomains = {}
     wc = {}
     errors = 0
@@ -41,21 +32,23 @@ def main(napfile):
             else:
                 subdomains[hostname] = 1
 
-        if data['status'] == NURL_STATUS_IS_DOWN:
-            unique_pages += 1
+        # Only process pages that are not too similar or exact duplicates
+        if data['finish'] not in {NURL_FINISH_TOO_SIMILAR, NURL_FINISH_TOO_EXACT}:
+
+            # Count the total number of words in the page
             words = sum(data['words'].values())
 
-            # If this page has more words than the current longest page, update it
+            # if this page has more words than the current longest page, update it
             if words > longest_page[1]:
                 longest_page = (url, words)
 
-            # Convert text content key to tokens and count frequency of each token
+            # convert the words to tokens and count the frequency of each word
             tokens = to_tokens([text for text in data['words'].keys()])
             page_word_counts = word_count(tokens)
 
-            # Increment word count in the global word count dictionary
+            # filter out stopwords and short words and increment count in global word count
             for word, count in page_word_counts.items():
-                if not is_stopword(word):
+                if len(word) >= 3 and any(c.isalpha() for c in word) and not is_stopword(word):
                     wc[word] = wc.get(word, 0) + count
 
         if data['finish'] != NURL_FINISH_OK:
